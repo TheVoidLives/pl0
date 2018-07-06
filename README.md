@@ -18,7 +18,7 @@ of the PL/0 Compiler architecture. Namely:
    - Parser/Code Generator (parser)
    - PL/0 Compiler (compiler)
 
-Compilation * Runtime Instructions
+Compilation & Runtime Instructions
 ---------------------------------
 
 (TBD)
