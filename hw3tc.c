@@ -66,6 +66,7 @@ typedef struct TableEntry
    int ID;
    struct TableEntry *next;
 } TableEntry;
+TableEntry *tableHead = NULL, *tableTail = NULL;
 
 // Keyword Trie - Lexer
 typedef struct TrieNode
@@ -162,6 +163,7 @@ int main (int argc, char** argv)
 
 
 	//call lexer - lexical.c
+   lexer(filename, f_l);
 	//create symbol table - new
 	//call parser - new
 	//cal virtual machine - pm0vm.c
@@ -179,7 +181,6 @@ int main (int argc, char** argv)
 int lexer (char* filename, int printFlag) {
    char token[MAX_LENGTH_IDENTIFIER + 1];
    FILE *readFile, *writeFile;
-   TableEntry *tableHead = NULL, *tableTail = NULL;
    TrieNode *keywordHead = getTrieNode();
    int flag = 0, i;
    int integerFlag = 0;
