@@ -47,7 +47,7 @@ void printStack(int sp, int bp, int *stack, int numAR);
 char *parseOP(int i);
 // End
 
-int main (int argc, char **argv)
+int VM(int argc, char **argv)
 {
    init(argv[1]);
 
