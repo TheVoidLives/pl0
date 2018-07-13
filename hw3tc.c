@@ -135,6 +135,7 @@ int main (int argc, char** argv)
    int f_a = 0;
    int f_v = 0;
    char* lex_filename, *pm0_filename;
+   int errCheck = 0;
 
    for (i = 1; i < argc; i++)
    {
@@ -175,7 +176,12 @@ int main (int argc, char** argv)
    }
 
    // Invoke Lexical Analyzer
-   lexer(lex_filename, f_l);
+   errCheck = lexer(lex_filename, f_l);
+
+   if (errCheck == -1)
+   {
+      return -1;
+   }
 
    // TODO: Gen. (Build) Symbol table - new
    // TODO: Call (Build) Parser
@@ -183,7 +189,11 @@ int main (int argc, char** argv)
    
    
    // Invoke Virtual Machine
-   VM(pm0_filename, f_v);
+   errCheck = VM(pm0_filename, f_v);
+   if (errCheck == -1)
+   {
+      return -1;
+   }
 }
 
 //----------------------------------//
@@ -235,8 +245,8 @@ int lexer (char* filename, int printFlag) {
 
    if (readFile == NULL)
    {
-      fprintf(stdout, "File not found");
-      return 1;
+      fprintf(stdout, "File not found\n");
+      return -1;
    }
    else if (writeFile == NULL)
    {
