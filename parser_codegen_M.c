@@ -159,7 +159,115 @@ int block()
 
 int statement();
 
-int condition();
+int condition()
+{
+	if (token->ID == oddsym)
+	{
+		// somehow save the id of what you are rn 
+		// so you can produce the instuction later
+		token = token->next;
+		errHandle = expression();
+
+		if (errHandle != 0)
+		{
+			return errHandle;
+		}
+
+		// generate instruction here
+	}
+	else 
+	{
+		errHandle = expression();
+
+		if (errHandle != 0)
+		{
+			return errHandle;
+		}
+
+		switch (token->ID)
+		{
+			// somehow save the id of what you are rn 
+			// so you can produce the instuction later
+			case eqsym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			case neqsym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			case lessym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			case leqsym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			case gtrsym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			case geqsym:
+
+				token = token->next;
+				errHandle = expression();
+
+				if (errHandle != 0)
+				{
+					return errHandle;
+				}
+
+				// generate instruction here
+				break;
+			default:
+
+				// TODO: handle error relational operator expected
+				return -1;
+				break;
+		}
+	}
+}
 
 int expression()
 {
