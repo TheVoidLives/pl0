@@ -114,7 +114,8 @@ void printLexemeTable(TableEntry *head, FILE *out);
 void printLexemeList(TableEntry *head, FILE *out);
 
 /* VM - Function Definitions */
-void init(char *fileName); // TODO Modify or delete this function
+int VM(char *filename, int printFlag);
+void initializeVM(char *fileName); // Replaced init()
 void instDecode(Instruction inst);
 void DumpVM();
 int base(int l, int base);
@@ -127,55 +128,68 @@ char *parseOP(int i);
 //
 //
 
-
 int main (int argc, char** argv)
 {
-	int i;
-	int f_l = 0;
-	int f_a = 0;
-	int f_v = 0;
-	char* filename;
+   int i;
+   int f_l = 0;
+   int f_a = 0;
+   int f_v = 0;
+   char* lex_filename, *pm0_filename;
 
-	for (i = 1, i < argc, i++)
-	{
-		if (strcmp(argv[i], "-l")) // Argument == -l
-		{
-			f_l = 1;
-		}
-		else if (strcmp(argv[i], "-a")) // Argument == -a
-		{
-			f_a = 1;
-		}
-		else if (strcmp(argv[i], "-v")) // Argument == -v
-		{
-			f_v = 1;
-		}
-		else // program filename
-		{
-			filename = argv[i];
-		}
-	}
+   for (i = 1; i < argc; i++)
+   {
+      // strncmp returns 0 if s1 and s2 are equal
+      if (strcmp(argv[i], "-l") == 0) // Argument == -l
+      {
+         f_l = 1;
+      }
+      else if (strcmp(argv[i], "-a") == 0) // Argument == -a
+      {
+         f_a = 1;
+      }
+      else if (strcmp(argv[i], "-v") == 0) // Argument == -v
+      {
+         f_v = 1;
+      }
+      else if (strcmp(argv[i], "-x") == 0) 
+      {
+         // TODO: Remove. Only for debugging. -x means "next arg is lex_file name"
+         lex_filename = argv[i+1];
+      }
+      else if (strcmp(argv[i], "-m") == 0) 
+      {
+         // TODO: Remove. Only for debugging. -m means "next arg is pm0_file name"
+         pm0_filename = argv[i+1];
+      }
+      else // PL0 Program Filename
+      {
+         // TODO: Uncomment for RELEASE functionality.
+         // lex_file = argv[i];
+      }
+   }
 
-	if (filename == NULL)
-	{
-		fprintf(stderr, "no code file found", );
-	}
+   if (lex_filename == NULL)
+   {
+      fprintf(stderr, "no code file found");
+   }
 
 
-	//call lexer - lexical.c
-   lexer(filename, f_l);
-	//create symbol table - new
-	//call parser - new
-	//cal virtual machine - pm0vm.c
+   // Invoke Lexical Analyzer
+   lexer(lex_filename, f_l);
+
+   // TODO: Gen. (Build) Symbol table - new
+   // TODO: Call (Build) Parser
+   
+   // Call virtual machine - pm0vm.c
+   // TODO: Build IR Register
+   VM(pm0_filename, f_v);
 }
 
-//---------------------
-//
-// Lexer code
-//
-//---------------------
+//----------------------------------//
+//            Lexer Code            //
+//----------------------------------//
 
-//TODO double check that compatibility changes didnt break the lexer code
+//TODO: double check that compatibility changes didnt break the lexer code
 
 /* Main-lexer */
 int lexer (char* filename, int printFlag) {
@@ -247,7 +261,7 @@ int lexer (char* filename, int printFlag) {
       badVarNameFlag = 0;
       wierdCommentFlag = 0;
       extraChar = '\0';
-      
+
 
       if (DEBUG) 
       {
@@ -330,18 +344,18 @@ int lexer (char* filename, int printFlag) {
                else if (!(token[i] >= '0' && token[i] <= '9'))
                {
                   if ((token[i] >= 'a' && token[i] <= 'z') || 
-                      (token[i] >= 'A' && token[i] <= 'Z'))
+                        (token[i] >= 'A' && token[i] <= 'Z'))
                   {
-                    handleError(24, writeFile);
-                    return -1;
+                     handleError(24, writeFile);
+                     return -1;
                   }
                   else
                   {
-                    flag = 1;
+                     flag = 1;
                      if (tooLongFlag == 0)
                      {
-                     extraChar = token[i];
-                     token[i] = '\0';
+                        extraChar = token[i];
+                        token[i] = '\0';
                      } 
                   }
                }
@@ -386,12 +400,12 @@ int lexer (char* filename, int printFlag) {
             }
          }
       }
-     
+
       if (DEBUG) 
       {
-            printf("Current Token: %s\n", token);
+         printf("Current Token: %s\n", token);
       }
-      
+
 
       if (integerFlag == 1) 
       {
@@ -545,8 +559,8 @@ int lexer (char* filename, int printFlag) {
       {
          while (extraChar == ' ' || extraChar == '\r' || extraChar == '\0' || extraChar == '\n' || extraChar == '\t' || blankSpaceFlag == 1)
          {
-           blankSpaceFlag = 0;
-           extraChar = fgetc(readFile);
+            blankSpaceFlag = 0;
+            extraChar = fgetc(readFile);
          }
          token[0] = extraChar;
          token[1] = '\0';
@@ -645,34 +659,34 @@ TableEntry *insertTableEntry(TableEntry *tail, char *word, int id)
 
 void initKeywords(TrieNode *head) 
 {
-      insertKeyword(head, "const", constsym);
-      insertKeyword(head, "var", varsym);
-      insertKeyword(head, "begin", beginsym);
-      insertKeyword(head, "end", endsym );
-      insertKeyword(head, "if", ifsym);
-      insertKeyword(head, "then", thensym);
-      insertKeyword(head, "while", whilesym);
-      insertKeyword(head, "do", dosym);
-      insertKeyword(head, "read", readsym);
-      insertKeyword(head, "write", writesym);
-      insertKeyword(head, "odd", oddsym);
-      if (DEBUG) 
-      {
-            printf("It freaking worked...?");     
-      }
+   insertKeyword(head, "const", constsym);
+   insertKeyword(head, "var", varsym);
+   insertKeyword(head, "begin", beginsym);
+   insertKeyword(head, "end", endsym );
+   insertKeyword(head, "if", ifsym);
+   insertKeyword(head, "then", thensym);
+   insertKeyword(head, "while", whilesym);
+   insertKeyword(head, "do", dosym);
+   insertKeyword(head, "read", readsym);
+   insertKeyword(head, "write", writesym);
+   insertKeyword(head, "odd", oddsym);
+   if (DEBUG) 
+   {
+      printf("It freaking worked...?");     
+   }
 }
 
 TrieNode *getTrieNode()
 {
-      TrieNode *tmp = NULL;
-      if ((tmp = malloc(sizeof(TrieNode)))) 
+   TrieNode *tmp = NULL;
+   if ((tmp = malloc(sizeof(TrieNode)))) 
+   {
+      for (int i = 0; i < 26; i++) 
       {
-            for (int i = 0; i < 26; i++) 
-            {
-                  tmp->children[i] = NULL;
-            }
+         tmp->children[i] = NULL;
       }
-      return tmp;
+   }
+   return tmp;
 }
 
 /* Inserts keywords into thge Keyword Trie. Called 
@@ -790,8 +804,8 @@ void printLexemeTable(TableEntry *head, FILE *out)
          tmp = tmp->next;
       }
    }
-  fprintf(stdout,"\n");
-  fprintf(out,"\n"); 
+   fprintf(stdout,"\n");
+   fprintf(out,"\n"); 
 }
 
 /*Prints the Lexeme List indicate by HEAD */
@@ -822,5 +836,243 @@ void printLexemeList(TableEntry *head, FILE *out)
       }
       fprintf(stdout,"\n");
       fprintf(out,"\n");
+   }
+}
+
+//----------------------------------//
+//              VM Code             //
+//----------------------------------//
+
+// Invoke the PM/0 (PL/0) Virtual Machine 
+// Note: The Instruction Register MUST be initialized prior to running the Vm
+int VM(char *filename, int printFlag)
+{
+   // Initialize the Virtual Machine
+   initializeVM(filename);
+
+   // Print VM Output Header if print Flag is thrown
+   if (printFlag) printf("\n OP   Rg Lx Vl[ PC BP SP]\n");
+
+   // Halt is initialized to 0;
+   while (Halt != 1)
+   {
+      // The Fetch cycle is executed within the parentheses of
+      // Instruction Decode (e.g.; IR[PC]) where we retreive the
+      // current Instruction to be executed from the IR "Register"
+      //
+      //The Execute Cycle takes place within the instDecode function.
+      //
+      // DumpVM Only serves to print the executed instruction and the appropriate.
+      // Function will be deprecated.
+      instDecode(IR[PC]);
+      DumpVM(PPC);
+   }
+
+   // TODO: Return 1 for success 0 for failure. Error Handling?
+   return 1;
+}
+
+/*Initialize PM/0*/
+void initializeVM(char *filename)
+{
+   FILE *file;
+
+   // Replaces For-Loops
+   memset(REG, 0, MAX_REG*sizeof(REG[0]));               // (1) Initialize Registers to 0
+   memset(STACK, 0, MAX_STACK_HEIGHT*sizeof(STACK[0]));  // (2) Initialize Stack to 0
+
+   // (1) Initialize instruction set if necessary
+   if ((file = fopen(filename, "rw+")) == NULL)
+   {
+      fprintf(stderr, "PM0VM Warning: File not found. Assuming IR is populated...");
+      return;
+   }
+
+   fprintf(stderr, "PM0VM Warning: File found. Attempting to Populate IR From File...");
+
+   // Read the Instructions into the IR Register (Array). 
+   for (int i = 0; !feof(file); i++)
+   {
+      fscanf(file, "%d %d %d %d", &IR[i].OP, &IR[i].REG, &IR[i].L, &IR[i].M);
+   }
+}
+
+
+void instDecode(Instruction inst)
+{
+   PPC = PC;
+   PC++;
+   switch(inst.OP)
+   {
+      case 1:  // Load Constant     LIT R 0 M
+         REG[inst.REG] = inst.M;
+         break;
+      case 2:     // Return            RTN 0 0 0
+         SP = BP - 1;
+         BP = STACK[(SP + 3)];
+         PC = STACK[(SP + 4)];
+
+         // decrease the number of activation records for printing purposes
+         numAR--;
+         break;
+      case 3:     // Load to register  LOD R L M
+         REG[inst.REG] = STACK[(base(inst.L, BP) + inst.M)];
+         break;
+      case 4:     // Store to stack    STO R L M
+         STACK[(base(inst.L, BP) + inst.M)] = REG[inst.REG];
+         break;
+      case 5:     // Call Func         CAL 0 L M
+         STACK[SP + 1] = 0;
+         STACK[SP + 2] = base(inst.L, BP);
+         STACK[SP + 3] = BP;
+         STACK[SP + 4] = PC;
+         BP = SP + 1;
+         PC = inst.M;
+
+         // increase the number of activation records for printing purposes
+         numAR++;
+         break;
+      case 6:  // Increment         INC 0 0 M
+         SP = SP + inst.M;
+         break;
+      case 7:  // Jump              JMP 0 0 M
+         PC = inst.M;
+         break;
+      case 8:  // Jump if zero      JPC R 0 M
+         if (REG[inst.REG] == 0)
+            PC = inst.M;
+         break;
+      case 9:  // SIO aka the edgy one
+         switch (inst.M)
+         {
+            case 1: // Print Reg
+               printf("%d\n", REG[inst.REG]);
+               break;
+            case 2: // Read into REG
+               scanf("%d", &REG[inst.REG]);
+               break;
+            case 3: // Set HALT == 1
+               Halt = 1;
+               break;
+         }
+         break;
+      case 10:    // NEG   R[i] R[j] R [k]   (R[i] <- -R[j])
+         REG[inst.REG] = -1 * REG[inst.L];
+         break;
+      case 11:    // ADD   R[i] R[j] R [k]   (R[i] <- R[j] + R[k])
+         REG[inst.REG] = REG[inst.L] + REG[inst.M];
+         break;
+      case 12:    // SUB   R[i] R[j] R [k]   (R[i] <- R[j] - R[k])
+         REG[inst.REG] = REG[inst.L] - REG[inst.M];
+         break;
+      case 13:    // MUL   R[i] R[j] R [k]   (R[i] <- R[j] * R[k])
+         REG[inst.REG] = REG[inst.L] * REG[inst.M];
+         break;
+      case 14:    // DIV   R[i] R[j] R [k]   (R[i] <- R[j] / R[k])
+         REG[inst.REG] = REG[inst.L] / REG[inst.M];
+         break;
+      case 15:    // ODD   R[i] R[j] R [k]   (R[i] <- R[i] % 2)
+         REG[inst.REG] = REG[inst.L] % 2;
+         break;
+      case 16:    // MOD   R[i] R[j] R [k]   (R[i] <- R[j] % R[k])
+         REG[inst.REG] = REG[inst.L] % REG[inst.M];
+         break;
+      case 17:    // EQL   R[i] R[j] R [k]   (R[i] <- R[j] == R[k])
+         REG[inst.REG] = (REG[inst.L] == REG[inst.M]) ? 1 : 0;
+         break;
+      case 18:    // NEQ   R[i] R[j] R [k]   (R[i] <- R[j] != R[k])
+         REG[inst.REG] = (REG[inst.L] != REG[inst.M]) ? 1 : 0;
+         break;
+      case 19:    // LSS   R[i] R[j] R [k]   (R[i] <- R[j] < R[k])
+         REG[inst.REG] = (REG[inst.L] < REG[inst.M]) ? 1 : 0;
+         break;
+      case 20:    // LEQ   R[i] R[j] R [k]   (R[i] <- R[j] <= R[k])
+         REG[inst.REG] = (REG[inst.L] <= REG[inst.M]) ? 1 : 0;
+         break;
+      case 21:    // GTR   R[i] R[j] R [k]   (R[i] <- R[j] > R[k])
+         REG[inst.REG] = (REG[inst.L] > REG[inst.M]) ? 1 : 0;
+         break;
+      case 22:    // GEQ   R[i] R[j] R [k]   (R[i] <- R[j] >= R[k])
+         REG[inst.REG] = (REG[inst.L] >= REG[inst.M]) ? 1 : 0;
+         break;
+      default:
+         fprintf(stderr, "Invalid OP Code Entered.");
+         break;
+   }
+}
+
+/* Given by Professor Montagne - Base Incrementer  */
+int base(int l, int base) // l stand for L in the instruction format
+{
+   int b1; //find base L levels down b1 = base;
+   b1 = base;
+   while (l > 0)
+   {
+      b1 = STACK[b1 + 1];
+      l--;
+   }
+   return b1;
+}
+
+void DumpVM(int i)
+{
+   // The op code, register, lexical level, value, PC, BP, & SP
+   printf("%-4s%3d%3d%3d[%3d%3d%3d] ", parseOP(IR[i].OP), IR[i].REG, IR[i].L, IR[i].M, PC, BP, SP);
+
+   // The STACK section (Use the other function)
+   printStack(SP, BP, STACK, numAR);
+   printf("\n");
+
+   // The REGISTERS
+   printf("\tRegisters:[%3d%3d%3d%3d%3d%3d%3d%3d]\n", REG[0], REG[1], REG[2], REG[3], REG[4], REG[5], REG[6], REG[7]);
+}
+
+char *parseOP(int i)
+{
+
+   switch(i)
+   {
+      case 1: return "LIT";
+      case 2: return "RTN";
+      case 3: return "LOD";
+      case 4: return "STO";
+      case 5: return "CAL";
+      case 6: return "INC";
+      case 7: return "JMP";
+      case 8: return "JPC";
+      case 9: return "SIO";
+      case 10: return "NEG";
+      case 11: return "ADD";
+      case 12: return "SUB";
+      case 13: return "MUL";
+      case 14: return "DIV";
+      case 15: return "ODD";
+      case 16: return "MOD";
+      case 17: return "EQL";
+      case 18: return "NEQ";
+      case 19: return "LSS";
+      case 20: return "LEQ";
+      case 21: return "GTR";
+      case 22: return "GEQ";
+      default:    fprintf(stderr, "Invalid OP Code Entered."); return NULL;
+   }
+}
+
+/* Given by Professor Montagne - Validator  */
+void printStack(int sp, int bp, int* stack, int numAR){
+   int i;
+   if (bp == 1) {
+      if (numAR > 0) {
+         printf("|");
+      }
+   }
+   else {
+      //Print the lesser lexical level
+      printStack(bp-1, stack[bp + 2], stack, numAR-1);
+      printf("|");
+   }
+   //Print the stack contents - at the current level
+   for (i = bp; i <= sp; i++) {
+      printf("%3d ", stack[i]);
    }
 }

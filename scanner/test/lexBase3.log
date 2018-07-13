@@ -1,0 +1,7 @@
+Source Program:err1In.txt
+//Error #1
+//Variable does not start with a letter.
+
+2variable
+
+Error: Invalid symbol.

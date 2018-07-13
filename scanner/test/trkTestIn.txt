@@ -1,0 +1,9 @@
+//Tricky Test
+//This test attempts to test whether or not the Lexical Analyzer
+//treats tricky cases correctly.
+
+,.
+
+x:=y;
+
+varx

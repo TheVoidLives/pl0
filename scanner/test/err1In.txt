@@ -1,0 +1,4 @@
+/* Error #1 */
+/* Variable does not start with a letter. */
+
+2variable

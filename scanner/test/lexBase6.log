@@ -1,0 +1,7 @@
+Source Program:err4In.txt
+//Error #4
+//Invalid Symbols
+
+$ # & ! _ ~ ` ? 
+
+Error: Invalid symbol.

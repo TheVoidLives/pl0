@@ -1,0 +1,7 @@
+Source Program:err2In.txt
+//Error #2
+//Number too long (5 digits)
+
+123456
+
+Error: Invalid symbol.

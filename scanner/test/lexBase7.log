@@ -1,0 +1,48 @@
+Source Program:trkTestIn.txt
+//Tricky Test
+//This test attempts to test whether or not the Lexical Analyzer
+//treats tricky cases correctly.
+
+,.
+
+x:=y;
+
+varx
+
+
+Lexeme Table:
+lexeme		token type
+/		7
+/		7
+Tricky		2
+Test		2
+/		7
+/		7
+This		2
+test		2
+attempts		2
+to		2
+test		2
+whether		2
+or		2
+not		2
+the		2
+Lexical		2
+Analyzer		2
+/		7
+/		7
+treats		2
+tricky		2
+cases		2
+correctly		2
+.		19
+,		17
+.		19
+x		2
+:=		20
+y		2
+;		18
+varx		2
+
+Lexeme List:
+7 7 2 Tricky 2 Test 7 7 2 This 2 test 2 attempts 2 to 2 test 2 whether 2 or 2 not 2 the 2 Lexical 2 Analyzer 7 7 2 treats 2 tricky 2 cases 2 correctly 19 17 19 2 x 20 2 y 18 2 varx 

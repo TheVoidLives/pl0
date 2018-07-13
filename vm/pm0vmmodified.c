@@ -39,7 +39,8 @@ int Halt = 0; // End Of Program Flag
 int numAR = 0; // Number of activation records currently open
 
 // Function Definitions
-void init(char *fileName);
+int VM(char *filename, int printFlag);
+void initializeVM(char *fileName);
 void instDecode(Instruction inst);
 void DumpVM();
 int base(int l, int base);
@@ -47,10 +48,18 @@ void printStack(int sp, int bp, int *stack, int numAR);
 char *parseOP(int i);
 // End
 
-int VM(int argc, char **argv)
-{
-   init(argv[1]);
 
+// Invoke the PM/0 (PL/0) Virtual Machine 
+// Note: The Instruction Register MUST be initialized prior to running the Vm
+int VM(char *filename, int printFlag)
+{
+   // Initialize the Virtual Machine
+   initializeVM(filename);
+
+   // Print VM Output Header if print Flag is thrown
+   if (printFlag) printf("\n OP   Rg Lx Vl[ PC BP SP]\n");
+
+   // Halt is initialized to 0;
    while (Halt != 1)
    {
       // The Fetch cycle is executed within the parentheses of
@@ -61,71 +70,39 @@ int VM(int argc, char **argv)
       //
       // DumpVM Only serves to print the executed instruction and the appropriate.
       // Function will be deprecated.
-      //
       instDecode(IR[PC]);
       DumpVM(PPC);
    }
+
+   // TODO: Return 1 for success 0 for failure. Error Handling?
+   return 1;
 }
 
 /*Initialize PM/0*/
-void init(char *fileName)
+void initializeVM(char *filename)
 {
-   int i = 0;
-   FILE *fp;
+   FILE *file;
 
-   // (1) Initialize instruction set
-   if (fileName == NULL)
+   // Replaces For-Loops
+   memset(REG, 0, MAX_REG*sizeof(REG[0]));               // (1) Initialize Registers to 0
+   memset(STACK, 0, MAX_STACK_HEIGHT*sizeof(STACK[0]));  // (2) Initialize Stack to 0
+
+   // (1) Initialize instruction set if necessary
+   if ((file = fopen(filename, "rw+")) == NULL)
    {
-      printf("Incorrect Syntax: ./pm0vm <fileName>");
-   }
-   else
-   {
-      if (DEBUG)
-      {
-         printf("Initializing...\n");
-      }
+      fprintf(stderr, "PM0VM Warning: File not found. Assuming IR is populated...");
+      return;
    }
 
-   fp = fopen(fileName, "r");
+   fprintf(stderr, "PM0VM Warning: File found. Attempting to Populate IR From File...");
 
-   if (fp == NULL)
+   // Read the Instructions into the IR Register (Array). 
+   for (int i = 0; !feof(file); i++)
    {
-      // Please for the love of god never run
-      fprintf(stdout, "File Not Found. Please try Again.\n");
+      fscanf(file, "%d %d %d %d", &IR[i].OP, &IR[i].REG, &IR[i].L, &IR[i].M);
    }
-
-   if (DEBUG)
-      printf("Reading File: \"%s\"...\n", fileName);
-
-   // Read the Instructions into Memory aka the IR
-   // Array. These Instructions will later be fetched
-   // from IR in the Main function.
-   for (i = 0; !feof(fp); i++)
-   {
-      fscanf(fp, "%d %d %d %d", &IR[i].OP, &IR[i].REG, &IR[i].L, &IR[i].M);
-   }
-
-   if (DEBUG)
-   {
-      printf("File Read Complete.\n");
-      printf("Initializing Registers....\n");
-   }
-
-
-   // Initialize Registers to 0
-   for (i = 0; i < MAX_REG; i++)
-   {
-      REG[i] = 0;
-   }
-
-   if (DEBUG)
-   {
-      printf("Registers Initialized.\n");
-   }
-
-   //The first line header for all the INSTRUCTION and PC, BP & SP
-   printf("\n OP   Rg Lx Vl[ PC BP SP]\n");
 }
+
 
 void instDecode(Instruction inst)
 {

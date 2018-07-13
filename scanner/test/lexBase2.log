@@ -1,0 +1,39 @@
+Source Program:symbIn.txt
+//Symbols that are accepted
+
+x y z       //Ident Sym     2
+abcdefghijk //Ident Sym     2
+1 2 3       //Number Sym    3
+12345       //Number Sym    3
++           //Plus Sym      4
+-           //Minus Sym     5
+*           //Mult Sym      6
+/           //Slash Sym     7
+%           //Odd Sym       8
+=           //Eq Sym        9
+<>          //Neq Sym       10
+<           //Less Sym      11
+<=          //Less/Eql Sym  12
+>           //Greater Sym   13
+>=          //Gtr/Eql Sym   14
+(           //LParent Sym   15
+)           //RParent Sym   16
+,           //Comma Sym     17
+;           //Semicolon Sym 18
+.           //Period Sym    19
+:=          //Becomes Sym   20
+begin       //Begin Sym     21
+end         //End Sym       22
+if          //If Sym        23
+then        //Then Sym      24
+while       //While Sym     25
+do          //Do Sym        26
+call        //Call Sym      27
+const       //Const Sym     28
+var         //Var Sym       29
+procedure   //Proc Sym      30
+write       //Write Sym     31
+read        //Read Sym      32
+else        //Else Sym      33
+
+Error: Invalid symbol.

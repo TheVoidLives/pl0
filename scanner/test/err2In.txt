@@ -1,0 +1,4 @@
+/* Error #2 */
+/* Number Long */
+
+123456

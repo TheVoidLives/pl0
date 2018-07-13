@@ -1,5 +1,11 @@
 // The following header serves as a reference doc. for all functionality 
 // within the implementation of a PL0 compiler found within. 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#ifndef PL0
 
 /* VM Constants */
 #define MAX_STACK_HEIGHT 2000 // Maxumum number of ARs (Activation Records) in STACK
@@ -144,7 +150,6 @@ void printLexemeTable(TableEntry *head, FILE *out);
 // Prints the (Raw) Lexeme List to stdout
 void printLexemeList(TableEntry *head, FILE *out);
 
-
 //----------------------------------//
 //   Parser Function Declarations   //
 //----------------------------------//
@@ -157,14 +162,15 @@ void printLexemeList(TableEntry *head, FILE *out);
 
 /* VM - Function Definitions */
 
+// Invoke the PM/0 (PL/0) Virtual Machine
+int VM(char *filename, int printFlag);
+
 // Helper Function: Initilializes the PM/0 Virtual Machine.
-//       -Reads Instructions into the IR (Instruction Register)
-//       -Initializes Reigsters to 0
-//       -Prints the header (for showcasing the STACK state)
-void init(char *fileName); // TODO: Remove FUnction. Applicable Actions should be done in VM(); 
+//       -Initializes STACK and REG to 0
+//       -Read Instructs from file if filename is not null
+void initializeVM(char *fileName);
 
 // Parses and Executes the given INSTRUCTION
-// TODO: Replace with FETCH() and EXECUTE()
 void instDecode(Instruction inst);
 
 // Prints (dumps) the current state of the VM to stdout
@@ -179,3 +185,5 @@ void printStack(int sp, int bp, int *stack, int numAR);
 // Helper Function: Returns the word (string literal) given an applicalbe OP-CODE (integer)
 char *parseOP(int i);
 
+#define PL0
+#endif
