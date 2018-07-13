@@ -153,17 +153,18 @@ int main (int argc, char** argv)
       }
       else if (strcmp(argv[i], "-x") == 0) 
       {
-         // TODO: Remove. Only for debugging. -x means "next arg is lex_file name"
+         // NOTE: Only for debugging. -x means "next arg is lex_file name"
          lex_filename = argv[i+1];
       }
       else if (strcmp(argv[i], "-m") == 0) 
       {
-         // TODO: Remove. Only for debugging. -m means "next arg is pm0_file name"
+         // NOTE: Remove. Only for debugging. -m means "next arg is pm0_file name"
          pm0_filename = argv[i+1];
       }
       else // PL0 Program Filename
       {
          // TODO: Uncomment for RELEASE functionality.
+         // TODO: Remove -x and -m flags
          // lex_file = argv[i];
       }
    }
@@ -173,15 +174,15 @@ int main (int argc, char** argv)
       fprintf(stderr, "no code file found");
    }
 
-
    // Invoke Lexical Analyzer
    lexer(lex_filename, f_l);
 
    // TODO: Gen. (Build) Symbol table - new
    // TODO: Call (Build) Parser
-   
-   // Call virtual machine - pm0vm.c
    // TODO: Build IR Register
+   
+   
+   // Invoke Virtual Machine
    VM(pm0_filename, f_v);
 }
 
@@ -190,6 +191,9 @@ int main (int argc, char** argv)
 //----------------------------------//
 
 //TODO: double check that compatibility changes didnt break the lexer code
+//
+// From Christian - Runs for inputLex.txt case. Haven't tested other hw2 cases. 
+//
 
 /* Main-lexer */
 int lexer (char* filename, int printFlag) {
@@ -844,7 +848,11 @@ void printLexemeList(TableEntry *head, FILE *out)
 //----------------------------------//
 
 // Invoke the PM/0 (PL/0) Virtual Machine 
-// Note: The Instruction Register MUST be initialized prior to running the Vm
+// Note: The Instruction Register MUST be initialized prior to running the VM
+//
+//
+// From Christian - Runs for factorialTest.txt case. Haven't tested other hw1 cases. 
+//
 int VM(char *filename, int printFlag)
 {
    // Initialize the Virtual Machine
