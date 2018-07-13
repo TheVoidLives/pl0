@@ -30,7 +30,7 @@ Symbol lookUp(char *symbol);
 // Some more global variable cus why not
 TableEntry *token = NULL;
 Symbol toBeInserted;
-Symbol badSearch? = 0; // check to determine of you found the symbol you where looking for
+Symbol badSearch? = NULL; // check to determine of you found the symbol you where looking for
 Symbol symbolTable[MAX_SL_LENGTH];
 int lastIndexOfST = 0; // keeps track of the las element in the symbol table
 int errHandle = 0;
