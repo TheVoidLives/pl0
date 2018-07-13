@@ -3,6 +3,8 @@
 #include <string.h>
 #include "pl0.h"
 
+#define MAX_SL_LENGTH 500
+
 typedef struct Symbol
 {
    int kind;          // const = 1, var = 2
@@ -23,12 +25,13 @@ int expression();
 int term();
 int factor();
 int addToTable(Symbol simbol);
-int lookUp(char *symbol);
+Symbol *lookUp(char *symbol);
 
 // Some more global variable cus why not
 TableEntry *token = NULL;
 Symbol toBeInserted;
-Symbol symbolTable[500];
+Symbol *badSearch = NULL; // check to determine of you found the symbol you where looking for
+Symbol symbolTable[MAX_SL_LENGTH];
 int lastIndexOfST = 0; // keeps track of the las element in the symbol table
 int errHandle = 0;
 int currLexical = 0;
@@ -170,6 +173,49 @@ int term();
 
 int factor();
 
-int addToTable(Symbol simbol);
+int addToTable(Symbol symbol)
+{
+   lastIndexOfST++;
 
-int lookUp(char *symbol);
+   if (lastIndexOfST >= MAX_SL_LENGTH) 
+   {
+      //TODO: handle error to many symbols!!!!
+      return -1;
+   }
+
+   symbolTable[lastIndexOfST] = toBeInserted;
+   return 0;
+}
+
+
+// Be carefull with error handling in this one. 
+// In case of error you return NULL instead of -1
+Symbol *lookUp(char *symbol)
+{
+   int i;
+
+   strcpy(symbolTable[0].name, symbol);
+
+   for (i = lastIndexOfST -1; i >= 0; i--)
+   {
+      if (strcmp(symbol, symbolTable[i].name) == 0)
+      {
+         if (i == 0)
+         {
+            // TODO: error variable/constant not defined
+            return NULL;
+         }
+         else if (symbolTable[i].mark == 1)
+         {
+            // TODO: error variable outside of scope
+            return NULL;	
+         }
+         else
+         {
+            return &symbolTable[i];
+         }
+      }
+   }
+   // This should never occur, but if it does, RIP you.
+   return NULL;
+}
