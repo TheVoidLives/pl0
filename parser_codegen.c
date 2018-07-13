@@ -5,12 +5,12 @@
 
 typedef struct Symbol
 {
-	int kind;            // const = 1, var = 2
-	char name [10];      // Name of var/const
-	int val;             // Value of var/const
-	int level;           // Lexicograpical level
-	int address;         // Offset from base address
-	int mark;            // is it accesible? 0 = yes, 1 = no
+   int kind;          // const = 1, var = 2
+   char name [11];    // Name of var/const (length 10. name[11] = \0)
+   int value;         // Value of var/const
+   int level;         // Lexicograpical level
+   int address;       // Offset from base address
+   int mark;          // is it accesible? 0 = yes, 1 = no
 } Symbol;
 
 
@@ -38,121 +38,127 @@ int curInsertionOffset = 4;
 
 int main (int argc, char** argv) 
 {
-	errHandle = program();
+   errHandle = program();
 
-	if (errHandle != 0) 
-	{
-		return errHandle;
-	}
+   if (errHandle != 0) 
+   {
+      return errHandle;
+   }
 
-	return 0;
+   return 0;
 }
 
 int program ()
 {
-	token = tableHead;
-	errHandle = block();
+   token = tableHead;
+   errHandle = block();
 
-	if (errHandle != 0) 
-	{
-		return errHandle;
-	}
+   if (errHandle != 0) 
+   {
+      return errHandle;
+   }
 
-	if (token != periodsym) 
-	{
-		// TODO: handle error
-		return -1;
-	}
+   if (token->ID != periodsym) 
+   {
+      // TODO: handle error
+      return -1;
+   }
 
-	return 0;
+   return 0;
 }
 
 int block()
 {
-	curInsertionOffset = 4;
+   curInsertionOffset = 4;
 
-	// If the token is a constant load all 
-	// constants into the Symbol Table
-	if (token->ID == constsym) 
-	{
-		toBeInserted.kind = 1;
+   // If the token is a constant load all 
+   // constants into the Symbol Table
+   if (token->ID == constsym) 
+   {
+      toBeInserted.kind = 1;
 
-		do 
-		{
-			token = tokem->next;
+      do 
+      {
+         token = token->next;
 
-			if (token->ID != identsym)
-			{
-				// TODO: handle error
-				return -1;
-			}
-			strcpy(toBeInserted.name, token->word);
-			token = tokem->next;
+         if (token->ID != identsym)
+         {
+            // TODO: handle error
+            return -1;
+         }
+         strcpy(toBeInserted.name, token->word);
+         token = token->next;
 
-			if (token->ID != eqsym)
-			{
-				//TODO: handle error
-				return -1;
-			}
-			token = token->next
+         if (token->ID != eqsym)
+         {
+            //TODO: handle error
+            return -1;
+         }
+         token = token->next;
 
-			if (token->ID != numbersym)
-			{
-				//TODO: handle error
-				return -1;
-			}
-			toBeInserted.Value = atoi(token->word);
-			toBeInserted.level = varLexical;
-			toBeInserted.address = curInsertionOffset++;
-			toBeInserted.mark = 0;
-			addToTable(toBeInserted);
+         if (token->ID != numbersym)
+         {
+            //TODO: handle error
+            return -1;
+         }
+         toBeInserted.value = atoi(token->word);
+         toBeInserted.level = varLexical;
+         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.mark = 0;
+         addToTable(toBeInserted);
 
-			token = token->next
+         token = token->next;
 
-		} while (token->ID == commasym);
+      } while (token->ID == commasym);
 
-		if (token->ID != semicolonsym) 
-		{
-			// TODO: handle error
-			return -1;
-		}
-		token = token->next;
-	}
+      if (token->ID != semicolonsym) 
+      {
+         // TODO: handle error
+         return -1;
+      }
+      token = token->next;
+   }
 
-	// If the token is a var load all 
-	// variables into the Symbol Table
-	if (token->ID == varsym)
-	{
-		toBeInserted.kind = 2;
-		do 
-		{
-			token = token->next;
+   // If the token is a var load all 
+   // variables into the Symbol Table
+   if (token->ID == varsym)
+   {
+      toBeInserted.kind = 2;
+      do 
+      {
+         token = token->next;
 
-			if (token->ID != identsym)
-			{
-				//TODO: hanlde error
-				return -1;
-			}
-			strcpy(toBeInserted.name, token->word);
-			toBeInserted.Value = 0;
-			toBeInserted.level = varLexical;
-			toBeInserted.address = curInsertionOffset++;
-			toBeInserted.mark = 0;
+         if (token->ID != identsym)
+         {
+            //TODO: hanlde error
+            return -1;
+         }
+         strcpy(toBeInserted.name, token->word);
+         toBeInserted.value = 0;
+         toBeInserted.level = varLexical;
+         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.mark = 0;
 
-			token = token->next
+         token = token->next;
 
-		} while (token->ID == commasym);
+      } while (token->ID == commasym);
 
-		if (token->ID != semicolonsym) 
-		{
-			// TODO: handle error
-			return -1;
-		}
-		token = token->next;
-	}
+      if (token->ID != semicolonsym) 
+      {
+         // TODO: handle error
+         return -1;
+      }
+      token = token->next;
+   }
 
-	statement();
+   errHandle = statement();
+
+   if (errHandle != 0)
+      return errHandle;
+      
+   return 0;
 }
+
 
 int statement();
 

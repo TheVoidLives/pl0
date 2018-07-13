@@ -83,7 +83,16 @@ typedef struct TrieNode
 //          parser globals          //
 //----------------------------------//
 
-// TODO: Create Parser Globals 
+// Some more global variable cus why not
+//TableEntry *token = NULL;  // Current Token to be Parsed
+//Symbol toBeInserted;       // Symbol to be inserted (SELF DOCUMENTATION FTW!)
+//Symbol symbolTable[500];   // Symbol Table
+//int lastIndexOfST = 0;     // keeps track of the las element in the symbol table
+//int errHandle = 0;         // Simple Err Handle Value. 
+//int currLexical = 0;       // Current Lexical Level - Lexical level of the current program. 
+//int varLexical = 0;        // Lexical level of the Variable that we are retrieving from the symbol table
+//int searchLexical = 0;     // |varLexical - currlexical| --> Lexical Level to store or load a word into stack
+//int curInsertionOffset = 4;// M - from VM. Used to Store things into the symbol table
 
 //----------------------------------//
 //         pm/0 (vm) globals        //
@@ -154,7 +163,35 @@ void printLexemeList(TableEntry *head, FILE *out);
 //   Parser Function Declarations   //
 //----------------------------------//
 
-// TODO: Create Parser Functions
+// TODO: Add Function Descriptions
+
+//
+// int program();
+
+//
+// int block();
+
+//
+// int statement();
+
+//
+// int condition();
+
+// 
+// int expression();
+
+// 
+// int term();
+
+// 
+// int factor();
+
+//
+// int addToTable(Symbol simbol);
+
+//
+// int lookUp(char *symbol);
+
 
 //----------------------------------//
 //      VM Function Declarations    //
