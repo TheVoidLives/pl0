@@ -25,11 +25,13 @@ int expression();
 int term();
 int factor();
 int addToTable(Symbol simbol);
+int insertInstruction(int OP, int REG, int L, int M);
 Symbol *lookUp(char *symbol);
 
 // Some more global variable cus why not
 TableEntry *token = NULL;
 Symbol toBeInserted;
+Symbol *currentSymbol = NULL;
 Symbol *badSearch = NULL; // check to determine of you found the symbol you where looking for
 Symbol symbolTable[MAX_SL_LENGTH];
 int lastIndexOfST = 0; // keeps track of the las element in the symbol table
@@ -38,6 +40,8 @@ int currLexical = 0;
 int varLexical = 0;
 int searchLexical = 0;
 int curInsertionOffset = 4;
+int currRegPos = 0;
+int currPC;
 
 int main (int argc, char** argv) 
 {
@@ -158,7 +162,7 @@ int block()
 
    if (errHandle != 0)
       return errHandle;
-      
+
    return 0;
 }
 
@@ -167,11 +171,86 @@ int statement();
 
 int condition();
 
-int expression();
+int expression()
+{
+   if (token->ID == plussym || token->ID == minussym)
+   {
+      errHandle = term();
 
-int term();
+      if (errHandle != 0)
+      {
+         return errHandle;
+      }
 
-int factor();
+      while (token->ID == plussym || token->ID == minussym)
+      {
+         token = token->next;
+         errHandle = term();
+
+         if (errHandle != 0)
+         {
+            return errHandle;
+         }
+      }
+   }
+   return 0;
+}
+
+int term()
+{
+   errHandle = factor();
+
+   if (errHandle != 0)
+   {
+      return errHandle;
+   }
+
+   while (token->ID == multsym || token->ID == slashsym) 
+   {
+      token = token->next;
+
+      errHandle = factor();
+
+      if (errHandle != 0)
+      {
+         return errHandle;
+      }
+   }
+   return 0;
+}
+
+int factor() 
+{
+   if (token->ID == identsym)
+   {
+      if ((currentSymbol = lookUp(token->word)) == NULL) 
+      {
+         // TODO: Handle Error
+         return -1;
+      }
+      insertInstruction(3, currRegPos, searchLexical, curInsertionOffset);
+   }
+   else if (token->ID == numbersym) 
+   {
+      insertInstruction(1, currRegPos, searchLexical, atoi(token->word));
+   }
+   else if (token->ID == lparentsym)
+   {
+      // Get Next Token
+      token = token->next;
+      expression();
+
+      if (token->ID != rparentsym)
+      {
+         // TODO: Handle Error
+         return -1;
+      }
+      token = token->next;
+   }
+   return 0;
+}
+
+
 
 int addToTable(Symbol symbol)
 {
@@ -218,4 +297,29 @@ Symbol *lookUp(char *symbol)
    }
    // This should never occur, but if it does, RIP you.
    return NULL;
+}
+
+// Helper Func.
+int insertInstruction(int OP, int REG, int L, int M) 
+{
+   // Build Instruction at current PC (according to Parser)
+   if (currRegPos > MAX_REG) 
+   {
+      // TODO: Handle Error
+      return -1;
+   }
+   
+   IR[currPC].OP = OP;
+   IR[currPC].REG = REG;
+   IR[currPC].L = L;
+   IR[currPC].M = M;
+
+   if (OP == 1 || OP == 3) 
+   {
+      currRegPos++;
+   }
+   
+   // Increment currPC to empty slot.
+   currPC++;
+   return 0;
 }
