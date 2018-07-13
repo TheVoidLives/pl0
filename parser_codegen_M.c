@@ -161,9 +161,51 @@ int statement();
 
 int condition();
 
-int expression();
+int expression()
+{
+	if (token->ID == plussym || token->ID == minussym)
+	{
+		errHandle = term();
 
-int term();
+		if (errHandle != 0)
+		{
+			return errHandle;
+		}
+
+		while (token->ID == plussym || token->ID == minussym)
+		{
+			token = token->next;
+			errHandle = term();
+
+			if (errHandle != 0)
+			{
+				return errHandle;
+			}
+		}
+	}
+}
+
+int term()
+{
+	errHandle = factor();
+
+	if (errHandle != 0)
+	{
+		return errHandle;
+	}
+
+	while (toke->ID == multsym || token->ID == slashsym) 
+	{
+		token = token->next;
+
+		errHandle = factor();
+
+		if (errHandle != 0)
+		{
+			return errHandle;
+		}
+	}
+}
 
 int factor();
 
