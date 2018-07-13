@@ -179,7 +179,7 @@ int addToTable(Symbol symbol)
 
    if (lastIndexOfST >= MAX_SL_LENGTH) 
    {
-      //TODO: handle error to many symbols!!!!
+      //TODO: handle error to0 many symbols!!!!
       return -1;
    }
 
