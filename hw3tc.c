@@ -178,9 +178,9 @@ int main (int argc, char** argv)
    // Invoke Lexical Analyzer
    errCheck = lexer(lex_filename, f_l);
 
-   if (errCheck == -1)
+   if (errCheck != 0)
    {
-      return -1;
+      return errCheck;
    }
 
    // TODO: Gen. (Build) Symbol table - new
@@ -190,9 +190,9 @@ int main (int argc, char** argv)
    
    // Invoke Virtual Machine
    errCheck = VM(pm0_filename, f_v);
-   if (errCheck == -1)
+   if (errCheck != 0)
    {
-      return -1;
+      return errCheck;
    }
 }
 
