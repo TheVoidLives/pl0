@@ -163,7 +163,7 @@ int lexer (char* filename, int printFlag);
 int invalidSymbol(char c);
 
 // Error Handler. Prints error to screen and exits PL0 Compiler.
-void handleError(int i, FILE *out);
+void handleError(int err);
 
 // Helper Function: Inserts a Lexeme (Word and Identifier) into the Lexeme Table
 TableEntry *insertTableEntry(TableEntry *tail, char *word, int id);

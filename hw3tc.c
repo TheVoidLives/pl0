@@ -62,7 +62,7 @@ int main (int argc, char** argv)
    // 
    if (lex_filename == NULL)
    {
-      fprintf(stderr, "no code file found");
+      fprintf(stderr, "PLC Error: No code file found");
    }
    
    // open output file in WRITE PLUS mode
@@ -77,14 +77,24 @@ int main (int argc, char** argv)
    // Invoke Lexical Analyzer
    errCheck = lexer(lex_filename, f_l);
    
+   if (DEBUG)
+      fprintf(stdout, "Lexer Complete - Err: %d", errCheck);
+
    // TODO; Handle Top Level Error Declarator
    if (errCheck != 0)
    {
       return errCheck;
    }
 
+   if (DEBUG)
+      fprintf(stdout, "ErrCheck Complete - Passed");
+
    // Invoke parser
    errCheck = parser(f_a);
+
+   if (DEBUG)
+      fprintf(stdout, "Parser Complete - Err: %d", errCheck);
+
 
    // TODO; Handle Top Level Error Declarator
    if (errCheck != 0) 
@@ -232,7 +242,7 @@ int lexer (char* filename, int printFlag) {
             }
             else if (invalidSymbol(token[0]))
             {
-               handleError(27, output);
+               handleError(27);
                flag = 1;
                badSymbolFlag = 1;
                return -1;
@@ -254,7 +264,7 @@ int lexer (char* filename, int printFlag) {
                   tooLongFlag = 1;
                   extraChar = token[i];
                   token[i] = '\0';
-                  handleError(25, output);
+                  handleError(25);
                   return -1;
                }
                else if (!(token[i] >= '0' && token[i] <= '9'))
@@ -262,7 +272,7 @@ int lexer (char* filename, int printFlag) {
                   if ((token[i] >= 'a' && token[i] <= 'z') || 
                         (token[i] >= 'A' && token[i] <= 'Z'))
                   {
-                     handleError(24, output);
+                     handleError(24);
                      return -1;
                   }
                   else
@@ -283,7 +293,7 @@ int lexer (char* filename, int printFlag) {
                   tooLongFlag = 1;
                   extraChar = token[i];
                   token[i] = '\0';
-                  handleError(26, output);
+                  handleError(26);
                   return -1;
                }
                else if (!((token[i] >= '0' && token[i] <= '9') ||
@@ -454,7 +464,7 @@ int lexer (char* filename, int printFlag) {
                }
                else
                {
-                  handleError(27, output);
+                  handleError(27);
                   KeepCharFlag = 1;
                   token[1] = '\0';
                }
@@ -523,30 +533,120 @@ int invalidSymbol(char c)
 }
 
 //TODO include all the other errors
-void handleError(int i, FILE *out)
+void handleError(int err)
 {
-   char errBuff[100];
-   // Assume I is errror indication
-   switch(i)
+   char errBuff[240];
+   // Assume i is errror indication
+   switch(err)
    {
+      case 1:
+         strncpy(errBuff, "Error: Expected \'=\' not \':=\'", 240);
+         break;
+      case 2:
+         strncpy(errBuff, "Error: Expected number after \'=\'", 240);
+         break;
+      case 3:
+         strncpy(errBuff, "Error: Expected \':=\' after identifier", 240);
+         break;
+      case 4: // TODO: Handle prc.
+         strncpy(errBuff, "Error: Declaration (Const or var) must be followed by identifier", 240);
+         break;
+      case 5:
+         strncpy(errBuff, "Error: Expected semicolon \';\' or comma \',\'", 240);
+         break;
+      case 6: // TODO: Handle prc. 
+         strncpy(errBuff, "Error: N/A ", 240);
+         break;
+      case 7:
+         strncpy(errBuff, "Error: Expected statement", 240);
+         break;
+      case 8:
+         strncpy(errBuff, "Error: Unexpected symbol after statement in block", 240);
+         break;
+      case 9:
+         strncpy(errBuff, "Error: Expected period \'.\'", 240);
+         break;
+      case 10:
+         strncpy(errBuff, "Error: Expected semicolon \';\' between statements", 240);
+         break;
+      case 11:
+         strncpy(errBuff, "Error: Undeclared identifier", 240); // You done fricked up
+         break;
+      case 12: // TODO: Handle prc. 
+         strncpy(errBuff, "Error: Assignment to constant unallowed", 240);
+         break;
+      case 13: 
+         strncpy(errBuff, "Error: Expected assignment operator \':=\'", 240);
+         break;
+      case 14: // TODO: Handle cl 
+         strncpy(errBuff, "Error: N/A", 240);
+         break;
+      case 15: // TODO: Handle cl
+         strncpy(errBuff, "Error: N/A", 240);
+         break;
+      case 16:
+         strncpy(errBuff, "Error: Expected \'then\' ", 240);
+         break;
+      case 17:
+         strncpy(errBuff, "Error: Expected semicolon \';\' or right bracket \'}\'", 240);
+         break;
+      case 18:
+         strncpy(errBuff, "Error: Expected \'do\'", 240);
+         break;
+      case 19:
+         strncpy(errBuff, "Error: Unexpected symbol following statement", 240);
+         break;
+      case 20:
+         strncpy(errBuff, "Error: Missing expected relational operator", 240);
+         break;
+      case 21: // TODO: Handle prc.
+         strncpy(errBuff, "Error: N/A", 240);
+         break;
+      case 22:
+         strncpy(errBuff, "Error: Expected right-parenthesis \')\'", 240);
+         break;
+      case 23:
+         strncpy(errBuff, "Error: The preceding factor cannot begin with this symbol", 240);
+         break;
       case 24:
-         strncpy(errBuff, "Error: Variable must begin with a letter.", 100);
+         strncpy(errBuff, "Error: Variable must begin with a letter.", 240);
          break;
       case 25:
-         strncpy(errBuff, "Error: Number too large.", 100);
+         strncpy(errBuff, "Error: Number too large.", 240);
          break;
       case 26:
-         strncpy(errBuff, "Error: Identifier too large.", 100);
+         strncpy(errBuff, "Error: Identifier too large.", 240);
          break;
       case 27:
-         strncpy(errBuff, "Error: Invalid Symbol.", 100);
+         strncpy(errBuff, "Error: Invalid Symbol.", 240);
          break;
+      case 28:
+         strncpy(errBuff, "Error: Expected \'end\'.", 240);
+         break;
+      case 29:
+         strncpy(errBuff, "Parser Error: Lexeme Table is null!", 240);
+         break;
+      case 30:
+         strncpy(errBuff, "Parser Error: Exceded max size of Symbol Table.", 240);
+         break;
+      case 31:
+         strncpy(errBuff, "Error: Variable out of scope", 240);
+         break;
+      case 32:
+         strncpy(errBuff, "Error: Exceded max register capacity", 240);
+         break;
+
       default: // How ???
-         return ;
+         return;
    }
 
    fprintf(stdout, "%s\n", errBuff);
-   fprintf(out, "%s\n", errBuff);
+   fprintf(output, "%s\n", errBuff);
+
+   fclose(output);
+
+   // PANIC - Exit Program 
+   exit(1);
 }
 
 
@@ -765,10 +865,13 @@ int parser(int printFlag)
 {
    if (tableHead == NULL) 
    {
+      handleError(29);
+      return -1;
    }
 
    errHandle = program();
 
+   // Return Failsafe
    if (errHandle != 0) 
    {
       return errHandle;
@@ -787,6 +890,7 @@ int program ()
    token = tableHead;
    errHandle = block();
 
+   // Return Failsafe
    if (errHandle != 0) 
    {
       return errHandle;
@@ -794,10 +898,11 @@ int program ()
 
    if (token->ID != periodsym) 
    {
-      // TODO: handle error
+      handleError(9);
       return -1;
    }
 
+   gen(9,0,0,3);
    return 0;
 }
 
@@ -817,7 +922,7 @@ int block()
 
          if (token->ID != identsym)
          {
-            // TODO: handle error
+            handleError(4);
             return -1;
          }
          strcpy(toBeInserted.name, token->word);
@@ -825,14 +930,14 @@ int block()
 
          if (token->ID != eqsym)
          {
-            //TODO: handle error
+            handleError(1);
             return -1;
          }
          token = token->next;
 
          if (token->ID != numbersym)
          {
-            //TODO: handle error
+            handleError(2);
             return -1;
          }
          toBeInserted.value = atoi(token->word);
@@ -847,7 +952,7 @@ int block()
 
       if (token->ID != semicolonsym) 
       {
-         // TODO: handle error
+         handleError(5); 
          return -1;
       }
       token = token->next;
@@ -864,7 +969,7 @@ int block()
 
          if (token->ID != identsym)
          {
-            //TODO: hanlde error
+            handleError(4);
             return -1;
          }
          strcpy(toBeInserted.name, token->word);
@@ -879,7 +984,7 @@ int block()
 
       if (token->ID != semicolonsym) 
       {
-         // TODO: handle error
+          handleError(5);
          return -1;
       }
       token = token->next;
@@ -889,6 +994,7 @@ int block()
    gen(6, 0, 0, curInsertionOffset);
    errHandle = statement();
 
+   // Return failsafe
    if (errHandle != 0)
       return errHandle;
 
@@ -911,18 +1017,19 @@ int statement()
 
          if (currentSymbol == NULL) 
          {
-            // TODO; Handle Error
+            handleError(11);
             return -1;
          }
 
          if (token->ID != becomessym) 
          {
-            // TODO; Handle Error
+            handleError(3);
             return -1;
          }
 
          errHandle = expression();
 
+         // Return Failsafe
          if (errHandle != 0) 
          {
             return errHandle;
@@ -936,6 +1043,7 @@ int statement()
          token = token->next;
          errHandle = statement();
 
+         // Return Failsafe
          if (errHandle != 0) 
          {
             return errHandle;
@@ -946,6 +1054,7 @@ int statement()
             token = token->next;
             errHandle = statement();
 
+            // Return Failsafe
             if (errHandle != 0) 
             {
                return errHandle;
@@ -954,7 +1063,7 @@ int statement()
 
          if (token->ID != endsym)
          {
-            // TODO: Handle Error
+            handleError(28);
             return -1;
          }
          return 0;
@@ -969,7 +1078,7 @@ int statement()
 
          if (token->ID != thensym) 
          {
-            // TODO: Handle Error
+            handleError(16);
             return -1;
          }
 
@@ -979,6 +1088,7 @@ int statement()
          gen(8, currRegPos, 0, 0);
          errHandle = statement();
 
+         // Return Failsafe
          if (errHandle != 0) 
          {
             return errHandle;
@@ -993,6 +1103,7 @@ int statement()
          token = token->next;
          errHandle = condition();
 
+         // Return Failsafe
          if (errHandle != 0) 
          {
             return errHandle;
@@ -1002,12 +1113,13 @@ int statement()
          gen(8, currRegPos, 0, 0);
          if (token->ID != dosym) 
          {
-            // TODO: Handle Error 
+            handleError(18); 
             return -1;
          }
          token = token->next;
          errHandle = statement();
 
+         // Return failsafe
          if (errHandle != 0) 
          {
             return errHandle;
@@ -1031,6 +1143,7 @@ int condition()
       token = token->next;
       errHandle = expression();
 
+      // Return Failsafe
       if (errHandle != 0)
       {
          return errHandle;
@@ -1043,6 +1156,7 @@ int condition()
    {
       errHandle = expression();
 
+      // Return Failsafe
       if (errHandle != 0)
       {
          return errHandle;
@@ -1056,6 +1170,7 @@ int condition()
             token = token->next;
             errHandle = expression();
 
+            // Return Failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1070,6 +1185,7 @@ int condition()
             token = token->next;
             errHandle = expression();
 
+            // Return failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1084,6 +1200,7 @@ int condition()
             token = token->next;
             errHandle = expression();
 
+            // Return failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1094,10 +1211,10 @@ int condition()
             currRegPos--;
             break;
          case leqsym:
-
             token = token->next;
             errHandle = expression();
 
+            // Return failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1108,10 +1225,10 @@ int condition()
             currRegPos--;
             break;
          case gtrsym:
-
             token = token->next;
             errHandle = expression();
 
+            // Return failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1125,7 +1242,8 @@ int condition()
 
             token = token->next;
             errHandle = expression();
-
+         
+            // Return failsafe
             if (errHandle != 0)
             {
                return errHandle;
@@ -1155,6 +1273,7 @@ int expression()
 
       errHandle = term();
 
+      // Return failsafe
       if (errHandle != 0)
       {
          return errHandle;
@@ -1176,6 +1295,7 @@ int expression()
 
          errHandle = term();
 
+         // Return failsafe
          if (errHandle != 0)
          {
             return errHandle;
@@ -1203,6 +1323,7 @@ int term()
    int mulop;
    errHandle = factor();
 
+   // Return failsafe
    if (errHandle != 0) 
    {
       return -1;
@@ -1214,6 +1335,7 @@ int term()
       token = token->next;
       errHandle = factor();
 
+      // Return failsafe
       if (errHandle != 0) 
       {
          return -1;
@@ -1245,7 +1367,7 @@ int factor()
       currentSymbol = lookUp(token->word);
       if (currentSymbol == NULL) 
       {
-         // TODO: Handle Bad Lookup Error
+         handleError(11);
          return -1;
       }
 
@@ -1263,7 +1385,7 @@ int factor()
 
       if (token->ID != rparentsym)
       {
-         // TODO: Handle Missing Paren Error
+         handleError(22);
          return -1;
       }
       token = token->next;
@@ -1279,7 +1401,7 @@ int addToTable(Symbol symbol)
 
    if (lastIndexOfST >= MAX_SL_LENGTH) 
    {
-      //TODO: handle error to0 many symbols!!!!
+      handleError(30);
       return -1;
    }
 
@@ -1302,12 +1424,12 @@ Symbol *lookUp(char *symbol)
       {
          if (i == 0)
          {
-            // TODO: error variable/constant not defined
+            handleError(11);
             return NULL;
          }
          else if (symbolTable[i].mark == 1)
          {
-            // TODO: error variable outside of scope
+            handleError(31);
             return NULL;	
          }
          else
@@ -1316,7 +1438,8 @@ Symbol *lookUp(char *symbol)
          }
       }
    }
-   // This should never occur, but if it does, RIP you.
+   // This should never occur.
+   handleError(11);
    return NULL;
 }
 
@@ -1326,7 +1449,7 @@ int gen(int OP, int REG, int L, int M)
    // Build Instruction at current PC (according to Parser)
    if (currRegPos > MAX_REG) 
    {
-      // TODO: Handle Error
+      handleError(32);
       return -1;
    }
 
@@ -1350,7 +1473,7 @@ void printIR()
 {
    fprintf(stdout, "\nInstruction(s)\n--------------------\n");
    fprintf(output, "\nInstruction(s)\n--------------------\n");
-   
+
    for (int i =0; i < currPC; i ++) 
    {
       fprintf(stdout, "%02d %02d %02d %02d\n", IR[i].OP, IR[i].REG, IR[i].L, IR[i].M);
@@ -1548,7 +1671,7 @@ void DumpVM(int i)
 
    // The STACK section (Use the other function)
    printStack(SP, BP, STACK, numAR);
-   
+
    fprintf(stdout, "\n");
    fprintf(output, "\n");
 
