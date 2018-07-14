@@ -23,6 +23,7 @@ int main (int argc, char** argv)
    int f_l = 0;
    int f_a = 0;
    int f_v = 0;
+   int f_x = 0;
    char* lex_filename, *pm0_filename;
    int errCheck = 0;
 
@@ -44,6 +45,7 @@ int main (int argc, char** argv)
       else if (strcmp(argv[i], "-x") == 0) 
       {
          // NOTE: Only for debugging. -x means "next arg is lex_file name"
+         f_x = 1;
          lex_filename = argv[i+1];
       }
       else if (strcmp(argv[i], "-m") == 0) 
@@ -55,7 +57,8 @@ int main (int argc, char** argv)
       {
          // TODO: Uncomment for RELEASE functionality.
          // TODO: Remove -x and -m flags
-         lex_filename = argv[i];
+         if (f_x == 0)
+            lex_filename = argv[i];
       }
    }
 
@@ -1138,11 +1141,11 @@ int statement()
          IR[w2PC].M = currPC;
          return 0;
       case writesym:
-         currRegPos++;
          gen(9, currRegPos, 0, 1);
          token = token->next;
          return 0;
       case readsym:
+         currRegPos++;
          gen(9, currRegPos, 0, 2);
          token = token->next;
          return 0;
