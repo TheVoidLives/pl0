@@ -1132,6 +1132,15 @@ int statement()
          gen(7, 0, 0, w1PC);
          IR[w2PC].M = currPC;
          return 0;
+      case writesym:
+         currRegPos++;
+         gen(9, currRegPos, 0, 1);
+         token = token->next;
+         break;
+      case readsym:
+         gen(9, currRegPos, 0, 2);
+         token = token->next;
+         break;
       default:
          printf("id %d %s\n", token->ID, token->word);
          return -1; // Death to your compiler :(
