@@ -27,6 +27,7 @@ Lexeme List:
 28 2 x 17 2 y 18 21 2 x 20 2 y 4 3 56 18 22 19 
 
 No errors encountered. Program is Syntatically correct.
+
 Instruction(s)
 --------------------
 06 00 00 06
@@ -37,6 +38,8 @@ Instruction(s)
 09 00 00 03
 
 
+
+ OP   Rg Lx Vl[ PC BP SP]
 INC   0  0  6[  1  1  6]   0   0   0   0   0   0 
 	Registers:[  0  0  0  0  0  0  0  0]
 LOD   0  0  6[  2  1  6]   0   0   0   0   0   0 

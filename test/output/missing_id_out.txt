@@ -1,0 +1,26 @@
+Source Program:
+var ;
+begin	
+  x := y + 56;
+end.
+
+
+Lexeme Table:
+lexeme token type
+var 28
+; 18
+begin 21
+x 2
+:= 20
+y 2
++ 4
+56 3
+; 18
+end 22
+. 19
+
+
+Lexeme List:
+28 18 21 2 x 20 2 y 4 3 56 18 22 19 
+
+Error: Declaration (Const or var) must be followed by identifier

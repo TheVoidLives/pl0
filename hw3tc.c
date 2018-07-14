@@ -879,8 +879,8 @@ int parser(int printFlag)
 
    if (printFlag == 1) 
    {
-      fprintf(stdout, "No errors encountered. Program is Syntatically correct.");
-      fprintf(output, "No errors encountered. Program is Syntatically correct.");
+      fprintf(stdout, "No errors encountered. Program is Syntatically correct.\n");
+      fprintf(output, "No errors encountered. Program is Syntatically correct.\n");
       printIR();
    }
 
@@ -898,7 +898,7 @@ int program ()
       return errHandle;
    }
 
-   if (token->ID != periodsym) 
+   if (token == NULL || token->ID != periodsym) 
    {
       handleError(9);
       return -1;
@@ -1053,7 +1053,12 @@ int statement()
          while (token->ID == semicolonsym) 
          {
             token = token->next;
-            if (token->ID == endsym) continue;
+            if (token == NULL) 
+            {
+               handleError(28);
+               return -1;
+            }
+            if (token->ID == periodsym || token->ID == endsym) continue;
             
             errHandle = statement();
 
@@ -1142,7 +1147,7 @@ int statement()
          token = token->next;
          return 0;
       default:
-         printf("id %d %s\n", token->ID, token->word);
+         handleError(7);
          return -1; // Death to your compiler :(
    }
 }
@@ -1385,7 +1390,6 @@ int factor()
       currentSymbol = lookUp(token->word);
       if (currentSymbol == NULL) 
       {
-         printf("\n2 factor\n");
          handleError(11);
          return -1;
       }
@@ -1443,7 +1447,6 @@ Symbol *lookUp(char *symbol)
       {
          if (i == 0)
          {
-            printf("\n3\n");
             handleError(11);
             return NULL;
          }
@@ -1459,7 +1462,6 @@ Symbol *lookUp(char *symbol)
       }
    }
    // This should never occur.
-   printf("\n4\n");
    handleError(11);
    return NULL;
 }
@@ -1521,7 +1523,7 @@ int VM(char *filename, int printFlag)
 
    // Print VM Output Header if print Flag is thrown
    if (printFlag) printf("\n OP   Rg Lx Vl[ PC BP SP]\n");
-
+   
    // Halt is initialized to 0;
    while (Halt != 1)
    {
@@ -1534,7 +1536,7 @@ int VM(char *filename, int printFlag)
       // DumpVM Only serves to print the executed instruction and the appropriate.
       // Function will be deprecated.
       instDecode(IR[PC]);
-      DumpVM(PPC);
+     if (printFlag) DumpVM(PPC);
    }
 
    // TODO: Return 1 for success 0 for failure. Error Handling?
