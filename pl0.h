@@ -199,40 +199,28 @@ void printLexemeList(TableEntry *head, FILE *out);
 
 // TODO: Add Function Descriptions
 
-//
+// Invoques the parser
 int parser(int printFlag);
 
-//
-int program();
 
-//
-int block();
+int program();     //--------------------------------------------//
+int block();       //                                            //
+int statement();   // Set of functions called recursively to     //
+int condition();   // check the grammar, build the symbol table, //
+int expression();  // and generate the instructions for the VM   //
+int term();        //                                            //
+int factor();      //--------------------------------------------//
 
-//
-int statement();
-
-//
-int condition();
-
-// 
-int expression();
-
-//
-int term();
-
-//
-int factor();
-
-//
+// Adds a new symbold to the Symbol Table
 int addToTable(Symbol simbol);
 
-//
+// Looks for a symbol in the Symbol Table
 Symbol *lookUp(char *symbol);
 
-//
+// Generates a new instruction
 int gen(int OP, int REG, int L, int M);
 
-// 
+// Prints the instruction register
 void printIR();
 
 //----------------------------------//
