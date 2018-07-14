@@ -5,122 +5,11 @@
 //
 // Program Purpose: 
 //    PL/0 compiler/VM
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
-/* VM Constants */
-#define MAX_STACK_HEIGHT 2000
-#define MAX_CODE_LENGTH 500
-#define MAX_LEXI_LEVEL 3
-#define MAX_REG 16
-
-/*Lexer Constants */
-#define MAX_LENGTH_IDENTIFIER 11
-#define MAX_LENGTH_INTEGER 5
-#define SIZE_ALPHABET 26
-
-/*Debug Flag*/
-#define DEBUG 0
-
-/* Enum Declaration - Lexer */
-typedef enum {
-   nulsym = 1,
-   identsym,
-   numbersym,
-   plussym,
-   minussym,
-   multsym,
-   slashsym,
-   oddsym,
-   eqsym,
-   neqsym,
-   lessym,
-   leqsym,
-   gtrsym,
-   geqsym,
-   lparentsym,
-   rparentsym,
-   commasym,
-   semicolonsym,
-   periodsym,
-   becomessym,
-   beginsym,
-   endsym,
-   ifsym,
-   thensym,
-   whilesym,
-   dosym,
-   constsym,
-   varsym,
-   writesym,
-   readsym
-} token_type;
-
-// Lexeme Table Entries - Lexer
-typedef struct TableEntry
-{
-   char word[MAX_LENGTH_IDENTIFIER + 1];
-   int ID;
-   struct TableEntry *next;
-} TableEntry;
-TableEntry *tableHead = NULL, *tableTail = NULL;
-
-// Keyword Trie - Lexer
-typedef struct TrieNode
-{
-   struct TrieNode *children[SIZE_ALPHABET];
-   int keyValue;
-} TrieNode;
-
-// Instruction - VM
-typedef struct Instruction
-{
-   int OP;
-   int REG;
-   int L;
-   int M;
-} Instruction;
-
-/* VM Registers & Stack */
-Instruction IR [MAX_CODE_LENGTH];   // Instruction Register
-int STACK [MAX_STACK_HEIGHT];       // Stack
-int REG [MAX_REG];         // Registers 0 - 15 (16)
-int SP = 0; // Stack Pointer
-int BP = 1; // Base pointer
-int PC = 0; // Program Counter
-int PPC = 0; // Previous Program Counter (printing purposes)
-int Halt = 0; // End Of Program Flag
-int numAR = 0; // Number of activation records currently open
-
-//----------------------------------//
-//      Function Declaraitons       //
-//----------------------------------//
-
-/* Lexer - Function Declarations */
-int lexer (char* filename, int printFlag);
-int invalidSymbol(char c);
-void handleError(int i, FILE *out);
-TableEntry *insertTableEntry(TableEntry *tail, char *word, int id);
-TrieNode *getTrieNode();
-void insertKeyword(TrieNode *head, char *key, int enumValue);
-int searchKeyword(TrieNode *head, char *key);
-void initKeywords(TrieNode *head);
-void wrapUp(TableEntry *head, FILE *src, FILE *out);
-void printSource(FILE *src, FILE *out);
-void printLexemeTable(TableEntry *head, FILE *out);
-void printLexemeList(TableEntry *head, FILE *out);
-
-/* VM - Function Definitions */
-int VM(char *filename, int printFlag);
-void initializeVM(char *fileName); // Replaced init()
-void instDecode(Instruction inst);
-void DumpVM();
-int base(int l, int base);
-void printStack(int sp, int bp, int *stack, int numAR);
-char *parseOP(int i);
+#include "pl0.h"
 
 //
 //
@@ -159,7 +48,7 @@ int main (int argc, char** argv)
       }
       else if (strcmp(argv[i], "-m") == 0) 
       {
-         // NOTE: Remove. Only for debugging. -m means "next arg is pm0_file name"
+         // NOTE: Only for debugging. -m means "next arg is pm0_file name"
          pm0_filename = argv[i+1];
       }
       else // PL0 Program Filename
@@ -173,6 +62,15 @@ int main (int argc, char** argv)
    if (lex_filename == NULL)
    {
       fprintf(stderr, "no code file found");
+   }
+   
+   // open output file in WRITE PLUS mode
+   output = fopen(OUTPUT_FILE, "w+");
+
+   if (output == NULL) 
+   {
+      // TODO: HANDLE THIS GODFORSAKEN ERROR
+      return -1;
    }
 
    // Invoke Lexical Analyzer
@@ -194,6 +92,9 @@ int main (int argc, char** argv)
    {
       return errCheck;
    }
+
+   // TODO: CLEANUP Compiler
+   fclose(output);
 }
 
 //----------------------------------//
@@ -208,7 +109,7 @@ int main (int argc, char** argv)
 /* Main-lexer */
 int lexer (char* filename, int printFlag) {
    char token[MAX_LENGTH_IDENTIFIER + 1];
-   FILE *readFile, *writeFile;
+   FILE *readFile;
    TrieNode *keywordHead = getTrieNode();
    int flag = 0, i;
    int integerFlag = 0;
@@ -234,7 +135,6 @@ int lexer (char* filename, int printFlag) {
    }
 
    readFile = fopen(filename, "r");
-   writeFile = fopen("out.txt", "w+");
 
    if (DEBUG) 
    {
@@ -248,11 +148,7 @@ int lexer (char* filename, int printFlag) {
       fprintf(stdout, "File not found\n");
       return -1;
    }
-   else if (writeFile == NULL)
-   {
-      fprintf(stdout, "Failed to create out file. Exiting...\n");
-   }
-
+  
    initKeywords(keywordHead); 
 
    if (DEBUG) 
@@ -330,7 +226,7 @@ int lexer (char* filename, int printFlag) {
             }
             else if (invalidSymbol(token[0]))
             {
-               handleError(27, writeFile);
+               handleError(27, output);
                flag = 1;
                badSymbolFlag = 1;
                return -1;
@@ -352,7 +248,7 @@ int lexer (char* filename, int printFlag) {
                   tooLongFlag = 1;
                   extraChar = token[i];
                   token[i] = '\0';
-                  handleError(25, writeFile);
+                  handleError(25, output);
                   return -1;
                }
                else if (!(token[i] >= '0' && token[i] <= '9'))
@@ -360,7 +256,7 @@ int lexer (char* filename, int printFlag) {
                   if ((token[i] >= 'a' && token[i] <= 'z') || 
                         (token[i] >= 'A' && token[i] <= 'Z'))
                   {
-                     handleError(24, writeFile);
+                     handleError(24, output);
                      return -1;
                   }
                   else
@@ -381,7 +277,7 @@ int lexer (char* filename, int printFlag) {
                   tooLongFlag = 1;
                   extraChar = token[i];
                   token[i] = '\0';
-                  handleError(26, writeFile);
+                  handleError(26, output);
                   return -1;
                }
                else if (!((token[i] >= '0' && token[i] <= '9') ||
@@ -552,7 +448,7 @@ int lexer (char* filename, int printFlag) {
                }
                else
                {
-                  handleError(27, writeFile);
+                  handleError(27, output);
                   KeepCharFlag = 1;
                   token[1] = '\0';
                }
@@ -596,7 +492,7 @@ int lexer (char* filename, int printFlag) {
 
    if (printFlag == 1) 
    {
-      wrapUp(tableHead, readFile, writeFile);
+      wrapUp(tableHead, readFile, output);
    }
 
    return 0;
@@ -775,8 +671,8 @@ void wrapUp(TableEntry *head, FILE *src, FILE *out)
    printLexemeTable(head, out);
    printLexemeList(head, out);
 
+   // Close Source. Leave Global output file open.
    fclose(src);
-   fclose(out);
 }
 
 /*Prints the original source file line by line. */
@@ -818,8 +714,8 @@ void printLexemeTable(TableEntry *head, FILE *out)
          tmp = tmp->next;
       }
    }
-   fprintf(stdout,"\n");
-   fprintf(out,"\n"); 
+   fprintf(stdout,"\n\n");
+   fprintf(out,"\n\n"); 
 }
 
 /*Prints the Lexeme List indicate by HEAD */
@@ -848,9 +744,614 @@ void printLexemeList(TableEntry *head, FILE *out)
          }
          tmp = tmp->next;
       }
-      fprintf(stdout,"\n");
-      fprintf(out,"\n");
+      fprintf(stdout,"\n\n");
+      fprintf(out,"\n\n");
    }
+}
+
+//----------------------------------//
+//           Parser Code            //
+//----------------------------------//
+
+// Note: The INPUT to the parser is the HEAD of the Lexeme 
+// Table as generated by the Lexer.
+int parse(int printFlag) 
+{
+   if (tableHead == NULL) 
+   {
+   }
+
+   errHandle = program();
+
+   if (errHandle != 0) 
+   {
+      return errHandle;
+   }
+
+   if (printFlag == 1) 
+   {
+      printIR();
+   }
+
+   return 0;
+}
+
+int program ()
+{
+   token = tableHead;
+   errHandle = block();
+
+   if (errHandle != 0) 
+   {
+      return errHandle;
+   }
+
+   if (token->ID != periodsym) 
+   {
+      // TODO: handle error
+      return -1;
+   }
+
+   return 0;
+}
+
+int block()
+{
+   curInsertionOffset = 4;
+
+   // If the token is a constant load all 
+   // constants into the Symbol Table
+   if (token->ID == constsym) 
+   {
+      toBeInserted.kind = 1;
+
+      do 
+      {
+         token = token->next;
+
+         if (token->ID != identsym)
+         {
+            // TODO: handle error
+            return -1;
+         }
+         strcpy(toBeInserted.name, token->word);
+         token = token->next;
+
+         if (token->ID != eqsym)
+         {
+            //TODO: handle error
+            return -1;
+         }
+         token = token->next;
+
+         if (token->ID != numbersym)
+         {
+            //TODO: handle error
+            return -1;
+         }
+         toBeInserted.value = atoi(token->word);
+         toBeInserted.level = varLexical;
+         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.mark = 0;
+         addToTable(toBeInserted);
+
+         token = token->next;
+
+      } while (token->ID == commasym);
+
+      if (token->ID != semicolonsym) 
+      {
+         // TODO: handle error
+         return -1;
+      }
+      token = token->next;
+   }
+
+   // If the token is a var load all 
+   // variables into the Symbol Table
+   if (token->ID == varsym)
+   {
+      toBeInserted.kind = 2;
+      do 
+      {
+         token = token->next;
+
+         if (token->ID != identsym)
+         {
+            //TODO: hanlde error
+            return -1;
+         }
+         strcpy(toBeInserted.name, token->word);
+         toBeInserted.value = 0;
+         toBeInserted.level = varLexical;
+         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.mark = 0;
+
+         token = token->next;
+
+      } while (token->ID == commasym);
+
+      if (token->ID != semicolonsym) 
+      {
+         // TODO: handle error
+         return -1;
+      }
+      token = token->next;
+   }
+
+   // currInsertionOffset - Size of AR allocate in STACK
+   gen(6, 0, 0, curInsertionOffset);
+   errHandle = statement();
+
+   if (errHandle != 0)
+      return errHandle;
+
+   return 0;
+}
+
+
+int statement() 
+{
+   // ifPC is local to the ifsym func.
+   // w1PC and w2PC are local to the whilesym func.
+   int ifPC, w1PC, w2PC;
+   Symbol *currentSymbol = NULL;
+
+   switch (token->ID) 
+   {
+      case identsym:
+         currentSymbol = lookUp(token->word);
+         token = token->next;
+
+         if (currentSymbol == NULL) 
+         {
+            // TODO; Handle Error
+            return -1;
+         }
+
+         if (token->ID != becomessym) 
+         {
+            // TODO; Handle Error
+            return -1;
+         }
+
+         errHandle = expression();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         searchLexical = abs(currLexical - currentSymbol->level);
+         gen(4, currRegPos, searchLexical, currentSymbol->address);
+
+         return 0;
+      case beginsym:
+         token = token->next;
+         errHandle = statement();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         while (token->ID == semicolonsym) 
+         {
+            token = token->next;
+            errHandle = statement();
+
+            if (errHandle != 0) 
+            {
+               return errHandle;
+            }
+         }
+
+         if (token->ID != endsym)
+         {
+            // TODO: Handle Error
+            return -1;
+         }
+         return 0;
+      case ifsym:
+         token = token->next;
+         errHandle = condition();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         if (token->ID != thensym) 
+         {
+            // TODO: Handle Error
+            return -1;
+         }
+
+         token = token->next; 
+         ifPC = currPC;
+
+         gen(8, currRegPos, 0, 0);
+         errHandle = statement();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         IR[ifPC].M = currPC;
+
+         return 0;
+      case whilesym:
+         // Save Current PC for later acces 
+         w1PC = currPC;
+         token = token->next;
+         errHandle = condition();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         w2PC = currPC;
+         gen(8, currRegPos, 0, 0);
+         if (token->ID != dosym) 
+         {
+            // TODO: Handle Error 
+            return -1;
+         }
+         token = token->next;
+         errHandle = statement();
+
+         if (errHandle != 0) 
+         {
+            return errHandle;
+         }
+
+         gen(7, 0, 0, w1PC);
+         IR[w2PC].M = currPC;
+         return 0;
+      default:
+         return -1; // Death to your compiler
+   }
+}
+
+
+int condition()
+{
+   if (token->ID == oddsym)
+   {
+      // somehow save the id of what you are rn
+      // so you can produce the instuction later
+      token = token->next;
+      errHandle = expression();
+
+      if (errHandle != 0)
+      {
+         return errHandle;
+      }
+
+      // generate instruction here
+      gen(15, currRegPos, currRegPos, 0);
+   }
+   else 
+   {
+      errHandle = expression();
+
+      if (errHandle != 0)
+      {
+         return errHandle;
+      }
+
+      switch (token->ID)
+      {
+         // somehow save the id of what you are rn 
+         // so you can produce the instuction later
+         case eqsym:
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(17, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         case neqsym:
+
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(18, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         case lessym:
+
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(19, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         case leqsym:
+
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(20, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         case gtrsym:
+
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(21, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         case geqsym:
+
+            token = token->next;
+            errHandle = expression();
+
+            if (errHandle != 0)
+            {
+               return errHandle;
+            }
+
+            // generate instruction here
+            gen(22, currRegPos-1, currRegPos-1, currRegPos);
+            currRegPos--;
+            break;
+         default:
+
+            // TODO: handle error relational operator expected
+            return -1;
+      }
+   }
+   return 0;
+}
+
+int expression()
+{
+   int addop;
+
+   if (token->ID == plussym || token->ID == minussym)
+   {
+      addop = token->ID;
+      token = token->next;
+
+      errHandle = term();
+
+      if (errHandle != 0)
+      {
+         return errHandle;
+      }
+
+      if (addop == minussym) 
+      {
+         gen(10, currRegPos, currRegPos, 0);
+      }
+   }
+   else 
+   {
+      term();
+
+      while (token->ID == plussym || token->ID == minussym)
+      {
+         addop = token->ID;
+         token = token->next;
+
+         errHandle = term();
+
+         if (errHandle != 0)
+         {
+            return errHandle;
+         }
+
+         if (addop == plussym) 
+         {
+            gen(11, currRegPos-1,currRegPos-1,currRegPos);
+            currRegPos--;
+         }
+         else 
+         {
+            gen(12, currRegPos-1,currRegPos-1, currRegPos);
+            currRegPos--;
+         }
+      }
+   }
+
+   return 0;
+}
+
+
+int term()
+{
+   int mulop;
+   errHandle = factor();
+
+   if (errHandle != 0) 
+   {
+      return -1;
+   } 
+
+   while (token->ID == multsym || token->ID == slashsym) 
+   {
+      mulop = token->ID;
+      token = token->next;
+      errHandle = factor();
+
+      if (errHandle != 0) 
+      {
+         return -1;
+      }
+
+      if (mulop == multsym) 
+      {
+         gen(13, currRegPos-1, currRegPos-1, currRegPos);
+         currRegPos--;
+      }
+      else 
+      {
+         gen(14, currRegPos-1, currRegPos-1, currRegPos);
+         currRegPos--;
+      }
+   }
+
+   // End
+   return 0;
+}
+
+
+int factor() 
+{
+   Symbol *currentSymbol = NULL;
+
+   if (token->ID == identsym)
+   {
+      currentSymbol = lookUp(token->word);
+      if (currentSymbol == NULL) 
+      {
+         // TODO: Handle Bad Lookup Error
+         return -1;
+      }
+
+      gen(3, currRegPos, searchLexical, curInsertionOffset);
+   }
+   else if (token->ID == numbersym)
+   {
+      gen(1, currRegPos, searchLexical, atoi(token->word));
+   }
+   else if (token->ID == lparentsym)
+   {
+      // Get Next Token
+      token = token->next;
+      expression();
+
+      if (token->ID != rparentsym)
+      {
+         // TODO: Handle Missing Paren Error
+         return -1;
+      }
+      token = token->next;
+   }
+   return 0;
+}
+
+
+
+int addToTable(Symbol symbol)
+{
+   lastIndexOfST++;
+
+   if (lastIndexOfST >= MAX_SL_LENGTH) 
+   {
+      //TODO: handle error to0 many symbols!!!!
+      return -1;
+   }
+
+   symbolTable[lastIndexOfST] = toBeInserted;
+   return 0;
+}
+
+
+// Be carefull with error handling in this one. 
+// In case of error you return NULL instead of -1
+Symbol *lookUp(char *symbol)
+{
+   int i;
+
+   strcpy(symbolTable[0].name, symbol);
+
+   for (i = lastIndexOfST -1; i >= 0; i--)
+   {
+      if (strcmp(symbol, symbolTable[i].name) == 0)
+      {
+         if (i == 0)
+         {
+            // TODO: error variable/constant not defined
+            return NULL;
+         }
+         else if (symbolTable[i].mark == 1)
+         {
+            // TODO: error variable outside of scope
+            return NULL;	
+         }
+         else
+         {
+            return &symbolTable[i];
+         }
+      }
+   }
+   // This should never occur, but if it does, RIP you.
+   return NULL;
+}
+
+// Helper Func.
+int gen(int OP, int REG, int L, int M) 
+{
+   // Build Instruction at current PC (according to Parser)
+   if (currRegPos > MAX_REG) 
+   {
+      // TODO: Handle Error
+      return -1;
+   }
+
+   IR[currPC].OP = OP;
+   IR[currPC].REG = REG;
+   IR[currPC].L = L;
+   IR[currPC].M = M;
+
+   if (OP == 1 || OP == 3) 
+   {
+      currRegPos++;
+   }
+
+   // Increment currPC to empty slot
+   currPC++;
+   return 0;
+}
+
+// Helpr Function: Prints the entirety of the Instruction Register
+void printIR() 
+{
+   fprintf(stdout, "\nInstruction(s)\n--------------------\n");
+   fprintf(output, "\nInstruction(s)\n--------------------\n");
+   
+   for (int i =0; i < currPC; i ++) 
+   {
+      fprintf(stdout, "%02d %02d %02d %02d\n", IR[i].OP, IR[i].REG, IR[i].L, IR[i].M);
+      fprintf(output, "%02d %02d %02d %02d\n", IR[i].OP, IR[i].REG, IR[i].L, IR[i].M);
+   }
+   fprintf(stdout, "\n\n");
+   fprintf(output, "\n\n");
 }
 
 //----------------------------------//
@@ -907,8 +1408,9 @@ void initializeVM(char *filename)
    }
 
    fprintf(stderr, "PM0VM Warning: File found. Attempting to Populate IR From File...");
+   memset(IR, 0, MAX_CODE_LENGTH*sizeof(IR[0]));               // (1) Initialize IR to 0
 
-   // Read the Instructions into the IR Register (Array). 
+   // Read the Instructions into the IR Register (Array).
    for (int i = 0; !feof(file); i++)
    {
       fscanf(file, "%d %d %d %d", &IR[i].OP, &IR[i].REG, &IR[i].L, &IR[i].M);
@@ -1035,19 +1537,23 @@ int base(int l, int base) // l stand for L in the instruction format
 void DumpVM(int i)
 {
    // The op code, register, lexical level, value, PC, BP, & SP
-   printf("%-4s%3d%3d%3d[%3d%3d%3d] ", parseOP(IR[i].OP), IR[i].REG, IR[i].L, IR[i].M, PC, BP, SP);
+   fprintf(stdout, "%-4s%3d%3d%3d[%3d%3d%3d] ", parseOP(IR[i].OP), IR[i].REG, IR[i].L, IR[i].M, PC, BP, SP);
+   fprintf(output, "%-4s%3d%3d%3d[%3d%3d%3d] ", parseOP(IR[i].OP), IR[i].REG, IR[i].L, IR[i].M, PC, BP, SP);
 
    // The STACK section (Use the other function)
    printStack(SP, BP, STACK, numAR);
-   printf("\n");
+   
+   fprintf(stdout, "\n");
+   fprintf(output, "\n");
 
    // The REGISTERS
-   printf("\tRegisters:[%3d%3d%3d%3d%3d%3d%3d%3d]\n", REG[0], REG[1], REG[2], REG[3], REG[4], REG[5], REG[6], REG[7]);
+   fprintf(stdout, "\tRegisters:[%3d%3d%3d%3d%3d%3d%3d%3d]\n", REG[0], REG[1], REG[2], REG[3], REG[4], REG[5], REG[6], REG[7]);
+   fprintf(output, "\tRegisters:[%3d%3d%3d%3d%3d%3d%3d%3d]\n", REG[0], REG[1], REG[2], REG[3], REG[4], REG[5], REG[6], REG[7]);
 }
+
 
 char *parseOP(int i)
 {
-
    switch(i)
    {
       case 1: return "LIT";
@@ -1081,16 +1587,19 @@ void printStack(int sp, int bp, int* stack, int numAR){
    int i;
    if (bp == 1) {
       if (numAR > 0) {
-         printf("|");
+         fprintf(stdout, "|");
+         fprintf(output, "|");
       }
    }
    else {
       //Print the lesser lexical level
       printStack(bp-1, stack[bp + 2], stack, numAR-1);
-      printf("|");
+      fprintf(stdout, "|");
+      fprintf(output, "|");
    }
    //Print the stack contents - at the current level
    for (i = bp; i <= sp; i++) {
-      printf("%3d ", stack[i]);
+      fprintf(stdout, "%3d ", stack[i]);
+      fprintf(output, "%3d ", stack[i]);
    }
 }

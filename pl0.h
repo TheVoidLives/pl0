@@ -1,5 +1,15 @@
 // The following header serves as a reference doc. for all functionality 
 // within the implementation of a PL0 compiler found within. 
+//
+// Authors: 
+//    Manuel Govea 
+//    Christian Whitted
+//
+// Course:
+//    COP3402C - Summer 2018
+//    Prof. Montagne
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,8 +28,17 @@
 #define MAX_LENGTH_INTEGER 5     // Maximum length of an integer in PL0
 #define SIZE_ALPHABET 26         // Size of Keyword Trie (Num. allowable values)
 
+/* Parser Constants*/
+#define MAX_SL_LENGTH 500
+
+#define OUTPUT_FILE "out.txt"
+
 /*Debug Flag*/
 #define DEBUG 0
+
+// COMPILER OUTPUT FILE 
+FILE *output;
+
 
 //----------------------------------//
 //           Lexer Globals          //
@@ -80,19 +99,33 @@ typedef struct TrieNode
 
 
 //----------------------------------//
-//          parser globals          //
+//          Parser globals          //
 //----------------------------------//
 
+// Struct representation of a Symbol within the Symbol Table
+typedef struct Symbol
+{
+   int kind;          // const = 1, var = 2
+   char name [11];    // Name of var/const (length 10. name[11] = \0)
+   int value;         // Value of var/const
+   int level;         // Lexicograpical level
+   int address;       // Offset from base address
+   int mark;          // is it accesible? 0 = yes, 1 = no
+} Symbol;
+
 // Some more global variable cus why not
-//TableEntry *token = NULL;  // Current Token to be Parsed
-//Symbol toBeInserted;       // Symbol to be inserted (SELF DOCUMENTATION FTW!)
-//Symbol symbolTable[500];   // Symbol Table
-//int lastIndexOfST = 0;     // keeps track of the las element in the symbol table
-//int errHandle = 0;         // Simple Err Handle Value. 
-//int currLexical = 0;       // Current Lexical Level - Lexical level of the current program. 
-//int varLexical = 0;        // Lexical level of the Variable that we are retrieving from the symbol table
-//int searchLexical = 0;     // |varLexical - currlexical| --> Lexical Level to store or load a word into stack
-//int curInsertionOffset = 4;// M - from VM. Used to Store things into the symbol table
+TableEntry *token = NULL;     // Current Token to be Parsed
+Symbol toBeInserted;          // Symbol to be inserted (SELF DOCUMENTATION FTW!)
+Symbol *badSearch = NULL;     // check to determine if you found the symbol you where looking for
+Symbol symbolTable[MAX_SL_LENGTH];   // Symbol Table
+int lastIndexOfST = 0;     // Keeps track of the last element in the symbol table
+int errHandle = 0;         // Simple Err Handle Value. 
+int currLexical = 0;       // Lexical Level of the current Program.
+int varLexical = 0;        // Lexical Level of the Variable we are retrieving from the symbol table
+int searchLexical = 0;     // |varLexical - currlexical| --> Lexical Level to store or load a word into stack
+int curInsertionOffset = 4;// M - from VM. Used to Store things into the symbol table
+int currRegPos = 0;        // Current Registry. Load and store into this current position.
+int currPC = 0;            // Current index of IR[] for code generation
 
 //----------------------------------//
 //         pm/0 (vm) globals        //
@@ -159,6 +192,7 @@ void printLexemeTable(TableEntry *head, FILE *out);
 // Prints the (Raw) Lexeme List to stdout
 void printLexemeList(TableEntry *head, FILE *out);
 
+
 //----------------------------------//
 //   Parser Function Declarations   //
 //----------------------------------//
@@ -166,32 +200,37 @@ void printLexemeList(TableEntry *head, FILE *out);
 // TODO: Add Function Descriptions
 
 //
-// int program();
+int program();
 
 //
-// int block();
+int block();
 
 //
-// int statement();
+int statement();
 
 //
-// int condition();
+int condition();
 
 // 
-// int expression();
-
-// 
-// int term();
-
-// 
-// int factor();
+int expression();
 
 //
-// int addToTable(Symbol simbol);
+int term();
 
 //
-// int lookUp(char *symbol);
+int factor();
 
+//
+int addToTable(Symbol simbol);
+
+//
+Symbol *lookUp(char *symbol);
+
+//
+int gen(int OP, int REG, int L, int M);
+
+// 
+void printIR();
 
 //----------------------------------//
 //      VM Function Declarations    //
