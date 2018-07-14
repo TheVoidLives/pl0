@@ -1136,11 +1136,11 @@ int statement()
          currRegPos++;
          gen(9, currRegPos, 0, 1);
          token = token->next;
-         break;
+         return 0;
       case readsym:
          gen(9, currRegPos, 0, 2);
          token = token->next;
-         break;
+         return 0;
       default:
          printf("id %d %s\n", token->ID, token->word);
          return -1; // Death to your compiler :(
