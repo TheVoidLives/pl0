@@ -55,7 +55,7 @@ int main (int argc, char** argv)
       {
          // TODO: Uncomment for RELEASE functionality.
          // TODO: Remove -x and -m flags
-         // lex_file = argv[i];
+         lex_filename = argv[i];
       }
    }
 
@@ -64,7 +64,7 @@ int main (int argc, char** argv)
    {
       fprintf(stderr, "PLC Error: No code file found");
    }
-   
+
    // open output file in WRITE PLUS mode
    output = fopen(OUTPUT_FILE, "w+");
 
@@ -76,7 +76,7 @@ int main (int argc, char** argv)
 
    // Invoke Lexical Analyzer
    errCheck = lexer(lex_filename, f_l);
-   
+
    if (DEBUG)
       fprintf(stdout, "Lexer Complete - Err: %d", errCheck);
 
@@ -164,7 +164,7 @@ int lexer (char* filename, int printFlag) {
       fprintf(stdout, "File not found\n");
       return -1;
    }
-  
+
    initKeywords(keywordHead); 
 
    if (DEBUG) 
@@ -879,6 +879,8 @@ int parser(int printFlag)
 
    if (printFlag == 1) 
    {
+      fprintf(stdout, "No errors encountered. Program is Syntatically correct.");
+      fprintf(output, "No errors encountered. Program is Syntatically correct.");
       printIR();
    }
 
@@ -977,6 +979,7 @@ int block()
          toBeInserted.level = varLexical;
          toBeInserted.address = curInsertionOffset++;
          toBeInserted.mark = 0;
+         addToTable(toBeInserted);
 
          token = token->next;
 
@@ -984,7 +987,7 @@ int block()
 
       if (token->ID != semicolonsym) 
       {
-          handleError(5);
+         handleError(5);
          return -1;
       }
       token = token->next;
@@ -1026,9 +1029,8 @@ int statement()
             handleError(3);
             return -1;
          }
-
+         token = token->next;
          errHandle = expression();
-
          // Return Failsafe
          if (errHandle != 0) 
          {
@@ -1037,7 +1039,6 @@ int statement()
 
          searchLexical = abs(currLexical - currentSymbol->level);
          gen(4, currRegPos, searchLexical, currentSymbol->address);
-
          return 0;
       case beginsym:
          token = token->next;
@@ -1052,6 +1053,8 @@ int statement()
          while (token->ID == semicolonsym) 
          {
             token = token->next;
+            if (token->ID == endsym) continue;
+            
             errHandle = statement();
 
             // Return Failsafe
@@ -1066,6 +1069,7 @@ int statement()
             handleError(28);
             return -1;
          }
+         token = token->next;
          return 0;
       case ifsym:
          token = token->next;
@@ -1129,7 +1133,8 @@ int statement()
          IR[w2PC].M = currPC;
          return 0;
       default:
-         return -1; // Death to your compiler
+         printf("id %d %s\n", token->ID, token->word);
+         return -1; // Death to your compiler :(
    }
 }
 
@@ -1242,7 +1247,7 @@ int condition()
 
             token = token->next;
             errHandle = expression();
-         
+
             // Return failsafe
             if (errHandle != 0)
             {
@@ -1282,10 +1287,12 @@ int expression()
       if (addop == minussym) 
       {
          gen(10, currRegPos, currRegPos, 0);
+         //token = token->next;
       }
    }
    else 
    {
+      // token = token->next;
       term();
 
       while (token->ID == plussym || token->ID == minussym)
@@ -1305,11 +1312,13 @@ int expression()
          {
             gen(11, currRegPos-1,currRegPos-1,currRegPos);
             currRegPos--;
+            //token = token->next;
          }
          else 
          {
             gen(12, currRegPos-1,currRegPos-1, currRegPos);
             currRegPos--;
+            //token = token->next;
          }
       }
    }
@@ -1367,6 +1376,7 @@ int factor()
       currentSymbol = lookUp(token->word);
       if (currentSymbol == NULL) 
       {
+         printf("\n2 factor\n");
          handleError(11);
          return -1;
       }
@@ -1388,8 +1398,8 @@ int factor()
          handleError(22);
          return -1;
       }
-      token = token->next;
    }
+   token = token->next;
    return 0;
 }
 
@@ -1405,7 +1415,7 @@ int addToTable(Symbol symbol)
       return -1;
    }
 
-   symbolTable[lastIndexOfST] = toBeInserted;
+   symbolTable[lastIndexOfST] = symbol;
    return 0;
 }
 
@@ -1418,12 +1428,13 @@ Symbol *lookUp(char *symbol)
 
    strcpy(symbolTable[0].name, symbol);
 
-   for (i = lastIndexOfST -1; i >= 0; i--)
+   for (i = lastIndexOfST; i >= 0; i--)
    {
       if (strcmp(symbol, symbolTable[i].name) == 0)
       {
          if (i == 0)
          {
+            printf("\n3\n");
             handleError(11);
             return NULL;
          }
@@ -1439,6 +1450,7 @@ Symbol *lookUp(char *symbol)
       }
    }
    // This should never occur.
+   printf("\n4\n");
    handleError(11);
    return NULL;
 }
@@ -1532,7 +1544,7 @@ void initializeVM(char *filename)
    // (1) Initialize instruction set if necessary
    if ((file = fopen(filename, "rw+")) == NULL)
    {
-      fprintf(stderr, "PM0VM Warning: File not found. Assuming IR is populated...");
+      // fprintf(stderr, "PM0VM Warning: File not found. Assuming IR is populated...");
       return;
    }
 

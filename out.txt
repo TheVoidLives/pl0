@@ -1,0 +1,51 @@
+Source Program:
+var x, y;
+begin	
+  x := y + 56;
+end.
+
+
+Lexeme Table:
+lexeme token type
+var 28
+x 2
+, 17
+y 2
+; 18
+begin 21
+x 2
+:= 20
+y 2
++ 4
+56 3
+; 18
+end 22
+. 19
+
+
+Lexeme List:
+28 2 x 17 2 y 18 21 2 x 20 2 y 4 3 56 18 22 19 
+
+
+Instruction(s)
+--------------------
+06 00 00 06
+03 00 00 06
+01 01 00 56
+11 01 01 02
+04 01 00 04
+09 00 00 03
+
+
+INC   0  0  6[  1  1  6]   0   0   0   0   0   0 
+	Registers:[  0  0  0  0  0  0  0  0]
+LOD   0  0  6[  2  1  6]   0   0   0   0   0   0 
+	Registers:[  0  0  0  0  0  0  0  0]
+LIT   1  0 56[  3  1  6]   0   0   0   0   0   0 
+	Registers:[  0 56  0  0  0  0  0  0]
+ADD   1  1  2[  4  1  6]   0   0   0   0   0   0 
+	Registers:[  0 56  0  0  0  0  0  0]
+STO   1  0  4[  5  1  6]   0   0   0   0  56   0 
+	Registers:[  0 56  0  0  0  0  0  0]
+SIO   0  0  3[  6  1  6]   0   0   0   0  56   0 
+	Registers:[  0 56  0  0  0  0  0  0]

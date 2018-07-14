@@ -1,4 +1,0 @@
-/* Error #4 */
-/* Invalid Symbols */
-
-$ # & ! _ ~ ` ? 
