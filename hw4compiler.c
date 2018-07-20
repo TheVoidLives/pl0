@@ -1247,12 +1247,34 @@ int statement()
          IR[w2PC].M = currPC;
          return 0;
       case writesym:
+         token = token->next;
+
+         if (token != identsym)
+         {
+            // TODO: handle error missing identifier
+            return -1;
+         }
+
+         currentSymbol = lookUp(token->word);
+         currRegPos++;
+         gen(3, currRegPos, abs(currLexical - currentSymbol->level), currentSymbol->address);
          gen(9, currRegPos, 0, 1);
+         currRegPos--;
          token = token->next;
          return 0;
       case readsym:
          currRegPos++;
          gen(9, currRegPos, 0, 2);
+         token = token->next;
+
+         if (token != identsym)
+         {
+            //TODO: handle error expected identifier
+            return -1;
+         }
+         currentSymbol = lookUp(token->word);
+         gen(4, currRegPos, abs(currLexical - currentSymbol->level), currentSymbol->address);
+         currRegPos--;
          token = token->next;
          return 0;
       default:
