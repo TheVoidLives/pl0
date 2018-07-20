@@ -223,6 +223,9 @@ Symbol *lookUp(char *symbol);
 // update the address of a procedure
 void updateAddress(char *name, int currPC);
 
+// mark as not accessible
+void markUnusable(String name);
+
 // Generates a new instruction
 int gen(int OP, int REG, int L, int M);
 

@@ -1058,6 +1058,7 @@ int block()
    if (currLexical > 0)
    {
       gen(2,0,0,0);
+      markUnusable(toBeInserted.name);
    }
 
    return 0;
@@ -1575,6 +1576,34 @@ void updateAddress(char *name, int currPC)
          else
          {
             symbolTable[i].address = currPC;
+         }
+      }
+   }
+}
+
+void markUnusable(String name)
+{
+   int i;
+   int j;
+
+   strcpy(symbolTable[0].name, name);
+
+   for (i = lastIndexOfST; i >= 0; i--)
+   {
+      if (strcmp(name, symbolTable[i].name) == 0)
+      {
+         if (i == 0)
+         {
+            //TODO handle error procedure not there??;
+            
+            return;
+         }
+         else
+         {
+            for (j = i + 1; symbolTable[j].kind != 3; j++)
+            {
+               symbolTable[j].mark = 1;
+            }
          }
       }
    }
