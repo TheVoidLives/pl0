@@ -551,14 +551,14 @@ void handleError(int err)
       case 3:
          strncpy(errBuff, "Error: Expected \':=\' after identifier", 240);
          break;
-      case 4: // TODO: Handle prc.
-         strncpy(errBuff, "Error: Declaration (Const or var) must be followed by identifier", 240);
+      case 4: 
+         strncpy(errBuff, "Error: Declaration (const, var, or procedure) must be followed by identifier", 240);
          break;
       case 5:
          strncpy(errBuff, "Error: Expected semicolon \';\' or comma \',\'", 240);
          break;
-      case 6: // TODO: Handle prc. 
-         strncpy(errBuff, "Error: N/A ", 240);
+      case 6: 
+         strncpy(errBuff, "Error: Incorrect symbole after procedure declaration", 240);
          break;
       case 7:
          strncpy(errBuff, "Error: Expected statement", 240);
@@ -575,17 +575,17 @@ void handleError(int err)
       case 11:
          strncpy(errBuff, "Error: Undeclared identifier", 240); // You done fricked up
          break;
-      case 12: // TODO: Handle prc. 
-         strncpy(errBuff, "Error: Assignment to constant unallowed", 240);
+      case 12:
+         strncpy(errBuff, "Error: Assignment to constant or procedure unallowed", 240);
          break;
       case 13: 
          strncpy(errBuff, "Error: Expected assignment operator \':=\'", 240);
          break;
-      case 14: // TODO: Handle cl 
-         strncpy(errBuff, "Error: N/A", 240);
+      case 14: 
+         strncpy(errBuff, "Error: Call must be followed by identifier.", 240);
          break;
-      case 15: // TODO: Handle cl
-         strncpy(errBuff, "Error: N/A", 240);
+      case 15: 
+         strncpy(errBuff, "Error: Cannot Call a constant or variable.", 240);
          break;
       case 16:
          strncpy(errBuff, "Error: Expected \'then\' ", 240);
@@ -602,8 +602,8 @@ void handleError(int err)
       case 20:
          strncpy(errBuff, "Error: Missing expected relational operator", 240);
          break;
-      case 21: // TODO: Handle prc.
-         strncpy(errBuff, "Error: N/A", 240);
+      case 21: 
+         strncpy(errBuff, "Error: Expression must not contain a procedure identifier", 240);
          break;
       case 22:
          strncpy(errBuff, "Error: Expected right-parenthesis \')\'", 240);
