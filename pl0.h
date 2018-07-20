@@ -123,7 +123,7 @@ Symbol *badSearch = NULL;     // check to determine if you found the symbol you 
 Symbol symbolTable[MAX_SL_LENGTH];   // Symbol Table
 int lastIndexOfST = 0;     // Keeps track of the last element in the symbol table
 int errHandle = 0;         // Simple Err Handle Value. 
-int currLexical = 0;       // Lexical Level of the current Program.
+int currLexical = -1;       // Lexical Level of the current Program.
 int varLexical = 0;        // Lexical Level of the Variable we are retrieving from the symbol table
 int searchLexical = 0;     // |varLexical - currlexical| --> Lexical Level to store or load a word into stack
 int curInsertionOffset = 4;// M - from VM. Used to Store things into the symbol table
@@ -219,6 +219,9 @@ int addToTable(Symbol simbol);
 
 // Looks for a symbol in the Symbol Table
 Symbol *lookUp(char *symbol);
+
+// update the address of a procedure
+void updateAddress(char *name, int currPC);
 
 // Generates a new instruction
 int gen(int OP, int REG, int L, int M);

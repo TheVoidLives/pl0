@@ -916,6 +916,8 @@ int program ()
 
 int block()
 {
+   int procPC;
+   currLexical++;
    curInsertionOffset = 4;
 
    // If the token is a constant load all 
@@ -999,6 +1001,51 @@ int block()
       token = token->next;
    }
 
+   if (token->ID == procsym)
+   {
+      gen(7,0,0,(currPC + 1));
+
+      //save this address
+      procPC = currPC;
+
+      toBeInserted.kind = 3;
+      toBeInserted.level = currLexical;
+      token = token->next;
+
+      if (token->ID != identsym)
+      {
+         //TODO: handle err identifier expected
+         return -1;
+      }
+      strcpy(toBeInserted.name, token->word);
+      //TODO: handle addres to start the function
+      toBeInserted.addres = currPC + 1;
+      toBeInserted.mark = 0;
+      toBeInserted.value = 0;
+      //TODO: insert here to table??
+      addToTable(toBeInserted);
+
+      token = token->next;
+      if (token->ID != semicolonsym)
+      {
+         //TODO: handle error semicolon expected
+         return -1;
+      }
+      token = token->next;
+
+      block();
+
+      if (token->ID != semicolonsym)
+      {
+         // TODO: handle error expected semicolon
+         return -1;
+      }
+      token = token->next;
+
+      IR[procPC].M = currPC;
+      updateAddress(toBeInserted.name, currPC);
+   }
+
    // currInsertionOffset - Size of AR allocate in STACK
    gen(6, 0, 0, curInsertionOffset);
    errHandle = statement();
@@ -1006,6 +1053,12 @@ int block()
    // Return failsafe
    if (errHandle != 0)
       return errHandle;
+
+   currLexical--;
+   if (currLexical > 0)
+   {
+      gen(2,0,0,0);
+   }
 
    return 0;
 }
@@ -1470,6 +1523,29 @@ Symbol *lookUp(char *symbol)
    // This should never occur.
    handleError(11);
    return NULL;
+}
+
+void updateAddress(char *name, int currPC)
+{
+   int i;
+
+   strcpy(symbolTable[0].name, name);
+
+   for (i = lastIndexOfST; i >= 0; i--)
+   {
+      if (strcmp(name, symbolTable[i].name) == 0)
+      {
+         if (i == 0)
+         {
+            //TODO handle error procedure not there??;
+            return NULL;
+         }
+         else
+         {
+            symbolTable[i].address = currPC;
+         }
+      }
+   }
 }
 
 // Helper Func.
