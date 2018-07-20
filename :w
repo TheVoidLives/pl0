@@ -1074,6 +1074,7 @@ int block()
    if (currLexical > 0)
    {
       gen(2,0,0,0);
+      printf("\nRETURNED\n");
       markUnusable(funcName);
    }
    currLexical--;
@@ -1088,6 +1089,7 @@ int statement()
    int ifPC, w1PC, w2PC;
    Symbol *currentSymbol = NULL;
 
+   //printf("\n\tID: %d\n\tWord: %s", token->ID, token->word); 
    switch (token->ID) 
    {
       case identsym:
@@ -1115,7 +1117,6 @@ int statement()
 
          searchLexical = abs(currLexical - currentSymbol->level);
          gen(4, currRegPos, searchLexical, currentSymbol->address);
-
          return 0;
       case callsym:
          // Get the procedure identifier
@@ -1618,7 +1619,7 @@ void markUnusable(char* name)
          }
          else
          {
-            lastIndexOfST = i;
+            lastIndeOfST = i;
          }
       }
    }
