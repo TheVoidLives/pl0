@@ -1046,6 +1046,21 @@ int statement()
          searchLexical = abs(currLexical - currentSymbol->level);
          gen(4, currRegPos, searchLexical, currentSymbol->address);
          return 0;
+      case callsym:
+         // Get the procedure identifier
+         token = token->next;
+         
+         if (token->ID != identsym) 
+         {
+            // TODO: Handle Identifier (Procedure) Error
+           return -1;
+         }
+
+         currentSymbol = lookUp(token->word);
+         gen(5, 0, currentSymbol->level+1, currentSymbol->address);
+         
+         // Move off of ident sym
+         token = token->next;
       case beginsym:
          token = token->next;
          errHandle = statement();
@@ -1110,6 +1125,22 @@ int statement()
          }
 
          IR[ifPC].M = currPC;
+
+         // Check for else 
+         if (token->next->ID == elsesym) 
+         {
+            // Generate Jump
+            gen(7,0,0,0);
+
+            // Save current PC
+            ifPC = currPC;
+
+            // Get what comes after else
+            token = token->next->next;
+
+            errHandle = statement();
+            IR[ifPC].M = currPC;
+         }
 
          return 0;
       case whilesym:
