@@ -75,13 +75,13 @@ typedef enum {
    thensym,
    whilesym,
    dosym,
-   callsym, // added
+   callsym,
    constsym,
    varsym,
-   procsym, // added
+   procsym,
    writesym,
    readsym,
-   elsesym // added
+   elsesym
 } token_type;
 
 // Lexeme Table - Linked List IMplementation

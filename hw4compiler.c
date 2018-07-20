@@ -1019,7 +1019,7 @@ int block()
       }
       strcpy(toBeInserted.name, token->word);
       //TODO: handle addres to start the function
-      toBeInserted.addres = currPC + 1;
+      toBeInserted.address = currPC + 1;
       toBeInserted.mark = 0;
       toBeInserted.value = 0;
       //TODO: insert here to table??
@@ -1569,7 +1569,8 @@ void updateAddress(char *name, int currPC)
          if (i == 0)
          {
             //TODO handle error procedure not there??;
-            return NULL;
+            
+            return;
          }
          else
          {
