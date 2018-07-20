@@ -1,0 +1,130 @@
+Source Program:
+int x,y,z,v,w;
+procedure a;
+  int x,y,u,v;
+  procedure b;
+    int y,z,v;
+    procedure c;
+      int y,z;
+      begin
+        z:=1;
+        x:=y+z+w
+      end;
+    begin
+      y:=x+u+w;
+      call c
+    end;
+  begin
+    z:=2;
+    u:=z+w;
+    call b
+  end;
+begin
+  x:=1; y:=2; z:=3; v:=4; w:=5;
+  x:=v+w;
+  write z;
+  call a;
+end.
+
+
+Lexeme Table:
+lexeme token type
+int 2
+x 2
+, 17
+, 17
+, 17
+, 17
+; 18
+procedure 30
+a 2
+; 18
+int 2
+x 2
+, 17
+, 17
+, 17
+; 18
+procedure 30
+b 2
+; 18
+int 2
+y 2
+, 17
+, 17
+; 18
+procedure 30
+c 2
+; 18
+int 2
+y 2
+, 17
+; 18
+begin 21
+z 2
+:= 20
+; 18
+x 2
+:= 20
++ 4
++ 4
+
+  4
+end 22
+; 18
+begin 21
+y 2
+:= 20
++ 4
++ 4
+; 18
+call 27
+c 2
+end 22
+; 18
+begin 21
+z 2
+:= 20
+; 18
+u 2
+:= 20
++ 4
+; 18
+call 27
+b 2
+end 22
+; 18
+begin 21
+x 2
+:= 20
+; 18
+y 2
+:= 20
+; 18
+z 2
+:= 20
+; 18
+v 2
+:= 20
+; 18
+w 2
+:= 20
+; 18
+x 2
+:= 20
++ 4
+; 18
+write 31
+z 2
+; 18
+call 27
+a 2
+; 18
+end 22
+. 19
+
+
+Lexeme List:
+2 int 2 x 17 17 17 17 18 30 2 a 18 2 int 2 x 17 17 17 18 30 2 b 18 2 int 2 y 17 17 18 30 2 c 18 2 int 2 y 17 18 21 2 z 20 18 2 x 20 4 4 4 22 18 21 2 y 20 4 4 18 27 2 c 22 18 21 2 z 20 18 2 u 20 4 18 27 2 b 22 18 21 2 x 20 18 2 y 20 18 2 z 20 18 2 v 20 18 2 w 20 18 2 x 20 4 18 31 2 z 18 27 2 a 18 22 19 
+
+Error: Undeclared identifier

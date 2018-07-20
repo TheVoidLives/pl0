@@ -239,6 +239,7 @@ int lexer (char* filename, int printFlag) {
             {
                flag = 1;
                goodSymbolFlag = 1;
+               goodSymbolFlagButNotG = 1;
                token[1] = fgetc(readFile);
                token[2] = '\0';
                extraChar = token[1];
@@ -738,7 +739,7 @@ void insertKeyword(TrieNode *head, char *key, int enumValue)
       // Move String to next cha`r
       key++;
    }
-   
+
    // Mark this as a keyword
    tmp->keyValue = enumValue;
 }
@@ -916,9 +917,13 @@ int program ()
 
 int block()
 {
-   int procPC;
+   int procPC, incrementOffset=0, startSize=lastIndexOfST;
+   char funcName[1024] = "hellp";
    currLexical++;
    curInsertionOffset = 4;
+
+   // Initial Jump | Recursion issues`
+   gen(7,0,0,(currPC + 1));
 
    // If the token is a constant load all 
    // constants into the Symbol Table
@@ -975,16 +980,21 @@ int block()
       toBeInserted.kind = 2;
       do 
       {
+         //printf("b4 get next\n\tID: %d\n\tWord:%s\n", token->ID, token->word);
+
          token = token->next;
+         //printf("after get next\n\tID: %d\n\tWord:%s\n", token->ID, token->word);
 
          if (token->ID != identsym)
          {
+
+            //printf("in var\n\tID: %d\n\tWord:%s\n", token->ID, token->word);
             handleError(4);
             return -1;
          }
          strcpy(toBeInserted.name, token->word);
          toBeInserted.value = 0;
-         toBeInserted.level = varLexical;
+         toBeInserted.level =currLexical;
          toBeInserted.address = curInsertionOffset++;
          toBeInserted.mark = 0;
          addToTable(toBeInserted);
@@ -1001,10 +1011,11 @@ int block()
       token = token->next;
    }
 
+   // Initialize increment offset
+   incrementOffset = (lastIndexOfST - startSize) + 4;
+
    if (token->ID == procsym)
    {
-      gen(7,0,0,(currPC + 1));
-
       //save this address
       procPC = currPC;
 
@@ -1018,10 +1029,13 @@ int block()
          return -1;
       }
       strcpy(toBeInserted.name, token->word);
+      strcpy(funcName, token->word);
+
       //TODO: handle addres to start the function
       toBeInserted.address = currPC + 1;
       toBeInserted.mark = 0;
       toBeInserted.value = 0;
+      
       //TODO: insert here to table??
       addToTable(toBeInserted);
 
@@ -1046,21 +1060,24 @@ int block()
       updateAddress(toBeInserted.name, currPC);
    }
 
+
    // currInsertionOffset - Size of AR allocate in STACK
-   gen(6, 0, 0, curInsertionOffset);
+   gen(6, 0, 0, incrementOffset);
+
    errHandle = statement();
 
    // Return failsafe
    if (errHandle != 0)
       return errHandle;
 
-   currLexical--;
+
+   //printf("nameto be inserted: %s",toBeInserted.name);
    if (currLexical > 0)
    {
       gen(2,0,0,0);
-      markUnusable(toBeInserted.name);
+      markUnusable(funcName);
    }
-
+   currLexical--;
    return 0;
 }
 
@@ -1072,6 +1089,7 @@ int statement()
    int ifPC, w1PC, w2PC;
    Symbol *currentSymbol = NULL;
 
+   //printf("\n\tID: %d\n\tWord: %s", token->ID, token->word); 
    switch (token->ID) 
    {
       case identsym:
@@ -1103,18 +1121,19 @@ int statement()
       case callsym:
          // Get the procedure identifier
          token = token->next;
-         
+
          if (token->ID != identsym) 
          {
             // TODO: Handle Identifier (Procedure) Error
-           return -1;
+            return -1;
          }
 
          currentSymbol = lookUp(token->word);
-         gen(5, 0, currentSymbol->level+1, currentSymbol->address);
-         
+         gen(5, 0, currentSymbol->level+1, currentSymbol->address+1);
+
          // Move off of ident sym
          token = token->next;
+         return 0;
       case beginsym:
          token = token->next;
          errHandle = statement();
@@ -1134,7 +1153,7 @@ int statement()
                return -1;
             }
             if (token->ID == periodsym || token->ID == endsym) continue;
-            
+
             errHandle = statement();
 
             // Return Failsafe
@@ -1570,7 +1589,7 @@ void updateAddress(char *name, int currPC)
          if (i == 0)
          {
             //TODO handle error procedure not there??;
-            
+
             return;
          }
          else
@@ -1581,7 +1600,7 @@ void updateAddress(char *name, int currPC)
    }
 }
 
-void markUnusable(String name)
+void markUnusable(char* name)
 {
    int i;
    int j;
@@ -1595,7 +1614,7 @@ void markUnusable(String name)
          if (i == 0)
          {
             //TODO handle error procedure not there??;
-            
+
             return;
          }
          else
@@ -1666,7 +1685,7 @@ int VM(char *filename, int printFlag)
 
    // Print VM Output Header if print Flag is thrown
    if (printFlag) printf("\n OP   Rg Lx Vl[ PC BP SP]\n");
-   
+
    // Halt is initialized to 0;
    while (Halt != 1)
    {
@@ -1679,7 +1698,7 @@ int VM(char *filename, int printFlag)
       // DumpVM Only serves to print the executed instruction and the appropriate.
       // Function will be deprecated.
       instDecode(IR[PC]);
-     if (printFlag) DumpVM(PPC);
+      if (printFlag) DumpVM(PPC);
    }
 
    // TODO: Return 1 for success 0 for failure. Error Handling?

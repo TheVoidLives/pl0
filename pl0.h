@@ -224,7 +224,7 @@ Symbol *lookUp(char *symbol);
 void updateAddress(char *name, int currPC);
 
 // mark as not accessible
-void markUnusable(String name);
+void markUnusable(char* name);
 
 // Generates a new instruction
 int gen(int OP, int REG, int L, int M);

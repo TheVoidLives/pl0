@@ -7,7 +7,7 @@ end.
 
 Lexeme Table:
 lexeme token type
-var 28
+var 29
 ; 18
 begin 21
 x 2
@@ -21,6 +21,6 @@ end 22
 
 
 Lexeme List:
-28 18 21 2 x 20 2 y 4 3 56 18 22 19 
+29 18 21 2 x 20 2 y 4 3 56 18 22 19 
 
-Error: Declaration (Const or var) must be followed by identifier
+Error: Declaration (const, var, or procedure) must be followed by identifier

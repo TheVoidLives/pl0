@@ -1,0 +1,45 @@
+Source Program:
+var else, call, procedure;
+begin
+   else := 5 + 2;
+   call := else + 7;
+   procedure := else - call;
+end.
+
+
+Lexeme Table:
+lexeme token type
+var 29
+else 33
+, 17
+call 27
+, 17
+procedure 30
+; 18
+begin 21
+else 33
+:= 20
+5 3
++ 4
+2 3
+; 18
+call 27
+:= 20
+else 33
++ 4
+7 3
+; 18
+procedure 30
+:= 20
+else 33
+- 5
+call 27
+; 18
+end 22
+. 19
+
+
+Lexeme List:
+29 33 17 27 17 30 18 21 33 20 3 5 4 3 2 18 27 20 33 4 3 7 18 30 20 33 5 27 18 22 19 
+
+Error: Declaration (const, var, or procedure) must be followed by identifier

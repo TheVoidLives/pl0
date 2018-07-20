@@ -2,12 +2,11 @@ Source Program:
 var x, y;
 begin	
   x := y + 56;
-end 
 
 
 Lexeme Table:
 lexeme token type
-var 28
+var 29
 x 2
 , 17
 y 2
@@ -19,10 +18,9 @@ y 2
 + 4
 56 3
 ; 18
-end 22
 
 
 Lexeme List:
-28 2 x 17 2 y 18 21 2 x 20 2 y 4 3 56 18 22 
+29 2 x 17 2 y 18 21 2 x 20 2 y 4 3 56 18 
 
-Error: Expected period '.'
+Error: Expected 'end'.
