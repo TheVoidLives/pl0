@@ -678,21 +678,23 @@ TableEntry *insertTableEntry(TableEntry *tail, char *word, int id)
 
 void initKeywords(TrieNode *head) 
 {
-   // TODO: Add Procedure, Call, Else, Read, Write
    insertKeyword(head, "const", constsym);
    insertKeyword(head, "var", varsym);
+   insertKeyword(head, "procedure", procsym);
    insertKeyword(head, "begin", beginsym);
-   insertKeyword(head, "end", endsym );
+   insertKeyword(head, "end", endsym);
    insertKeyword(head, "if", ifsym);
    insertKeyword(head, "then", thensym);
    insertKeyword(head, "while", whilesym);
    insertKeyword(head, "do", dosym);
+   insertKeyword(head, "call", callsym);
    insertKeyword(head, "read", readsym);
    insertKeyword(head, "write", writesym);
    insertKeyword(head, "odd", oddsym);
+   insertKeyword(head, "else", elsesym);
    if (DEBUG) 
    {
-      printf("It freaking worked...?");     
+      printf("It freaking worked...?");
    }
 }
 
