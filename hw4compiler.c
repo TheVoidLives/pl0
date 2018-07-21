@@ -957,7 +957,7 @@ int block()
          }
          toBeInserted.value = atoi(token->word);
          toBeInserted.level = varLexical;
-         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.address = ++curInsertionOffset;
          toBeInserted.mark = 0;
          addToTable(toBeInserted);
 
@@ -995,7 +995,7 @@ int block()
          strcpy(toBeInserted.name, token->word);
          toBeInserted.value = 0;
          toBeInserted.level =currLexical;
-         toBeInserted.address = curInsertionOffset++;
+         toBeInserted.address = ++curInsertionOffset;
          toBeInserted.mark = 0;
          addToTable(toBeInserted);
 
@@ -1013,7 +1013,7 @@ int block()
 
    // Initialize increment offset
    incrementOffset = (lastIndexOfST - startSize) + 4;
-
+   curInsertionOffset = 4;
    if (token->ID == procsym)
    {
       //save this address
@@ -1114,6 +1114,7 @@ int statement()
          }
 
          searchLexical = abs(currLexical - currentSymbol->level);
+         currRegPos--;
          gen(4, currRegPos, searchLexical, currentSymbol->address);
 
          return 0;
@@ -1249,14 +1250,13 @@ int statement()
       case writesym:
          token = token->next;
 
-         if (token != identsym)
+         if (token->ID != identsym)
          {
             // TODO: handle error missing identifier
             return -1;
          }
 
          currentSymbol = lookUp(token->word);
-         currRegPos++;
          gen(3, currRegPos, abs(currLexical - currentSymbol->level), currentSymbol->address);
          gen(9, currRegPos, 0, 1);
          currRegPos--;
@@ -1267,7 +1267,7 @@ int statement()
          gen(9, currRegPos, 0, 2);
          token = token->next;
 
-         if (token != identsym)
+         if (token->ID != identsym)
          {
             //TODO: handle error expected identifier
             return -1;
@@ -1624,7 +1624,6 @@ void updateAddress(char *name, int currPC)
 void markUnusable(char* name)
 {
    int i;
-   int j;
 
    strcpy(symbolTable[0].name, name);
 
