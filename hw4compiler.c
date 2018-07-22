@@ -953,8 +953,8 @@ int block()
             return -1;
          }
          toBeInserted.value = atoi(token->word);
-         toBeInserted.level = varLexical;
-         toBeInserted.address = ++curInsertionOffset;
+         toBeInserted.level = currLexical;
+         toBeInserted.address = curInsertionOffset++;
          toBeInserted.mark = 0;
          addToTable(toBeInserted);
 
@@ -992,7 +992,7 @@ int block()
          strcpy(toBeInserted.name, token->word);
          toBeInserted.value = 0;
          toBeInserted.level =currLexical;
-         toBeInserted.address = ++curInsertionOffset;
+         toBeInserted.address = curInsertionOffset++;
          toBeInserted.mark = 0;
          addToTable(toBeInserted);
 
@@ -1126,6 +1126,7 @@ int statement()
          }
 
          currentSymbol = lookUp(token->word);
+         //printf("word: %s Level: %d\n\n", currentSymbol->name, currentSymbol->level);
          gen(5, 0, currentSymbol->level, currentSymbol->address);
 
          // Move off of ident sym
@@ -1185,7 +1186,7 @@ int statement()
          token = token->next; 
          ifPC = currPC;
 
-         gen(8, currRegPos, 0, 0);
+         gen(8, currRegPos -1, 0, 0);
          errHandle = statement();
 
          // Return Failsafe
@@ -1254,6 +1255,7 @@ int statement()
          }
 
          currentSymbol = lookUp(token->word);
+         //printf ("word: %s lex: %d curlex: %d \n\n\n\n", currentSymbol->name, currentSymbol->level, currLexical);
          gen(3, currRegPos, abs(currLexical - currentSymbol->level), currentSymbol->address);
          gen(9, currRegPos, 0, 1);
          currRegPos--;
@@ -1324,8 +1326,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(17, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(17, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          case neqsym:
 
@@ -1339,8 +1342,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(18, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(18, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          case lessym:
 
@@ -1354,8 +1358,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(19, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(19, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          case leqsym:
             token = token->next;
@@ -1368,8 +1373,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(20, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(20, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          case gtrsym:
             token = token->next;
@@ -1382,8 +1388,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(21, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(21, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          case geqsym:
 
@@ -1397,8 +1404,9 @@ int condition()
             }
 
             // generate instruction here
-            gen(22, currRegPos-1, currRegPos-1, currRegPos);
             currRegPos--;
+            gen(22, currRegPos-1, currRegPos-1, currRegPos);
+            
             break;
          default:
 
@@ -1452,14 +1460,16 @@ int expression()
 
          if (addop == plussym) 
          {
-            gen(11, currRegPos-1,currRegPos-1,currRegPos);
             currRegPos--;
+            gen(11, currRegPos-1,currRegPos-1,currRegPos);
+            
             //token = token->next;
          }
          else 
          {
-            gen(12, currRegPos-1,currRegPos-1, currRegPos);
             currRegPos--;
+            gen(12, currRegPos-1,currRegPos-1, currRegPos);
+            
             //token = token->next;
          }
       }
@@ -1494,13 +1504,15 @@ int term()
 
       if (mulop == multsym) 
       {
-         gen(13, currRegPos-1, currRegPos-1, currRegPos);
          currRegPos--;
+         gen(13, currRegPos-1, currRegPos-1, currRegPos);
+         
       }
       else 
       {
-         gen(14, currRegPos-1, currRegPos-1, currRegPos);
          currRegPos--;
+         gen(14, currRegPos-1, currRegPos-1, currRegPos);
+         
       }
    }
 
@@ -1521,8 +1533,10 @@ int factor()
          handleError(11);
          return -1;
       }
-
-      gen(3, currRegPos, searchLexical, curInsertionOffset);
+      //printf ("word: %s lex: %d curlex: %d \n", currentSymbol->name, currentSymbol->level, currLexical);
+      searchLexical = abs(currLexical - currentSymbol->level);
+      //printf ("searchLexical: %d \n\n\n\n\n", searchLexical);
+      gen(3, currRegPos, searchLexical, currentSymbol->address);
    }
    else if (token->ID == numbersym)
    {
