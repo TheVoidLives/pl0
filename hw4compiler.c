@@ -55,8 +55,6 @@ int main (int argc, char** argv)
       }
       else // PL0 Program Filename
       {
-         // TODO: Uncomment for RELEASE functionality.
-         // TODO: Remove -x and -m flags
          if (f_x == 0)
             lex_filename = argv[i];
       }
@@ -102,6 +100,7 @@ int main (int argc, char** argv)
    // TODO; Handle Top Level Error Declarator
    if (errCheck != 0) 
    {
+      
       return errCheck;
    }
 
@@ -119,11 +118,6 @@ int main (int argc, char** argv)
 //----------------------------------//
 //            Lexer Code            //
 //----------------------------------//
-
-//TODO: double check that compatibility changes didnt break the lexer code
-//
-// From Christian - Runs for inputLex.txt case. Haven't tested other hw2 cases. 
-//
 
 /* Main-lexer */
 int lexer (char* filename, int printFlag) {
@@ -559,7 +553,7 @@ void handleError(int err)
          strncpy(errBuff, "Error: Expected semicolon \';\' or comma \',\'", 240);
          break;
       case 6: 
-         strncpy(errBuff, "Error: Incorrect symbole after procedure declaration", 240);
+         strncpy(errBuff, "Error: Incorrect symbol after procedure declaration", 240);
          break;
       case 7:
          strncpy(errBuff, "Error: Expected statement", 240);
@@ -638,6 +632,9 @@ void handleError(int err)
          break;
       case 32:
          strncpy(errBuff, "Error: Exceded max register capacity", 240);
+         break;
+      case 33:
+         strncpy(errBuff, "Error: Expected identifier following read/write", 240);
          break;
 
       default: // How ???
@@ -1025,24 +1022,24 @@ int block()
 
       if (token->ID != identsym)
       {
-         //TODO: handle err identifier expected
+         handleError(4);
          return -1;
       }
       strcpy(toBeInserted.name, token->word);
       strcpy(funcName, token->word);
 
-      //TODO: handle addres to start the function
+      // Handle addres to start the function
       toBeInserted.address = currPC + 1;
       toBeInserted.mark = 0;
       toBeInserted.value = 0;
       
-      //TODO: insert here to table??
+      // Insert here to table??
       addToTable(toBeInserted);
 
       token = token->next;
       if (token->ID != semicolonsym)
       {
-         //TODO: handle error semicolon expected
+         handleError(5);
          return -1;
       }
       token = token->next;
@@ -1051,7 +1048,7 @@ int block()
 
       if (token->ID != semicolonsym)
       {
-         // TODO: handle error expected semicolon
+         handleError(5);
          return -1;
       }
       token = token->next;
@@ -1124,7 +1121,7 @@ int statement()
 
          if (token->ID != identsym) 
          {
-            // TODO: Handle Identifier (Procedure) Error
+            handleError(4);
             return -1;
          }
 
@@ -1252,7 +1249,7 @@ int statement()
 
          if (token->ID != identsym)
          {
-            // TODO: handle error missing identifier
+            handleError(33);
             return -1;
          }
 
@@ -1269,7 +1266,7 @@ int statement()
 
          if (token->ID != identsym)
          {
-            //TODO: handle error expected identifier
+            handleError(33);
             return -1;
          }
          currentSymbol = lookUp(token->word);
@@ -1405,7 +1402,7 @@ int condition()
             break;
          default:
 
-            // TODO: handle error relational operator expected
+            handleError(20);
             return -1;
       }
    }
