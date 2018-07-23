@@ -40,6 +40,7 @@ Runtime Instructions
 ---------------------------------
 
 Minimum Runtime Arguments:
+
       1. ./a.out lexicalInput.txt
       2. ./hw4compiler lexicalInput.txt
 
@@ -92,3 +93,6 @@ Debugging Flags:
 Addendum
 --------
 See pl0.h for function definitions, global variable declarations, and documentation.
+
+
+
