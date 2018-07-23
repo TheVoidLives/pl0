@@ -3,10 +3,10 @@ An Implementation of PL/0 (Language/Scanner/Compiler)
 
 Authors
 -------
-This assignment was authored by the following students:
+This page was authored by the following users:
 
-   - Manuel Govea (ma100985)
-   - Christian Whitted (ch279244)
+   - MagoToon 
+   - TheVoidLives
 
 Overview
 --------
